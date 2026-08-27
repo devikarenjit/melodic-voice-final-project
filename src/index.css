@@ -357,3 +357,89 @@ color:#555;
     font-size: 1rem;
   }
 }
+
+body{
+background:#f6f7fb;
+font-family:Inter,sans-serif;
+}
+
+.dashboard{
+padding:30px;
+max-width:1400px;
+margin:auto;
+}
+
+.hero-banner{
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:linear-gradient(135deg,#eef2ff,#dbeafe);
+border-radius:30px;
+padding:35px;
+cursor:pointer;
+margin:25px 0;
+}
+
+.hero-banner img{
+width:420px;
+}
+
+.hero-banner button{
+background:#5B45FF;
+color:white;
+padding:15px 28px;
+border:none;
+border-radius:999px;
+font-size:18px;
+}
+
+.feature-grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+}
+
+.feature-card{
+padding:25px;
+border-radius:25px;
+cursor:pointer;
+transition:.25s;
+}
+
+.feature-card:hover{
+transform:translateY(-6px);
+}
+
+.feature-card img{
+width:160px;
+display:block;
+margin:auto;
+}
+
+.xp-track{
+height:14px;
+background:#ddd;
+border-radius:999px;
+overflow:hidden;
+}
+
+.xp-fill{
+height:100%;
+background:#5B45FF;
+}
+
+.lesson-page{
+max-width:700px;
+margin:60px auto;
+text-align:center;
+}
+
+.lesson-page button{
+margin-top:30px;
+background:#5B45FF;
+color:white;
+padding:16px 30px;
+border:none;
+border-radius:999px;
+font-size:18px;
+}

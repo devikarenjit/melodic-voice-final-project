@@ -1,8 +1,11 @@
 import { Routes, Route } from "react-router-dom";
 import App from "../App";
-import Navigation from "../components/Navigation";
+import Dashboard from "../pages/Dashboard";
 import HealthCheck from "../pages/HealthCheck";
 import AIChat from "../pages/AIChat";
+import AIStories from "../pages/AIStories";
+import AISongs from "../pages/AISongs";
+import Settings from "../pages/Settings";
 
 function Placeholder({ title }) {
   return (
@@ -15,19 +18,16 @@ function Placeholder({ title }) {
 
 export default function AppRoutes() {
   return (
-  <>
-    <Navigation />
-
     <Routes>
       <Route path="/" element={<App />} />
-      <Route path="/child-profile" element={<App />} />
-      <Route path="/aichat" element={<AIChat />} />
-      <Route path="/speech-assessment" element={<Placeholder title="Speech Assessment" />} />
-      <Route path="/ai-stories" element={<Placeholder title="AI Stories" />} />
-      <Route path="/ai-songs" element={<Placeholder title="AI Songs" />} />
-      <Route path="/progress" element={<Placeholder title="Progress" />} />
+      <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/health" element={<HealthCheck />} />
+      <Route path="/chat" element={<AIChat />} />
+      <Route path="/child-profile" element={<Placeholder title="Child Profile" />} />
+      <Route path="/speech-assessment" element={<Placeholder title="Speech Assessment" />} />
+      <Route path="/ai-stories" element={<AIStories />} />
+      <Route path="/ai-songs" element={<AISongs />} />
+      <Route path="/settings" element={<Settings />} />
     </Routes>
-  </>
-);
+  );
 }

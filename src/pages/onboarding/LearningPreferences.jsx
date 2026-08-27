@@ -6,45 +6,46 @@ export default function LearningPreferences() {
   return (
     <>
       <h1>Learning Preferences</h1>
+
       <p className="subtitle">
-        Tell us what your child enjoys so we can create personalized stories and songs.
+        Choose the types of stories and songs your child enjoys most.
       </p>
 
       <div className="form-group">
-        <label>Favorite Animal</label>
-        <input
-          type="text"
-          placeholder="Example: Dog"
-          value={data.animal}
-          onChange={(e) => updateData({ animal: e.target.value })}
-        />
-      </div>
+        <label>Favorite Story Theme *</label>
 
-      <div className="form-group">
-        <label>Favorite Story Theme</label>
         <select
-          value={data.theme}
-          onChange={(e) => updateData({ theme: e.target.value })}
+          value={data.storyTheme || ""}
+          onChange={(e) => updateData({ storyTheme: e.target.value })}
         >
           <option value="">Select a theme</option>
           <option>Fantasy</option>
+          <option>Adventure</option>
           <option>Animals</option>
           <option>Space</option>
           <option>Dinosaurs</option>
           <option>Princess</option>
-          <option>Adventure</option>
           <option>Superheroes</option>
+          <option>Educational</option>
         </select>
       </div>
 
       <div className="form-group">
-        <label>Favorite Song or Rhyme</label>
-        <input
-          type="text"
-          placeholder="Example: Twinkle Twinkle Little Star"
-          value={data.rhyme}
-          onChange={(e) => updateData({ rhyme: e.target.value })}
-        />
+        <label>Favorite Music Genre *</label>
+
+        <select
+          value={data.songGenre || ""}
+          onChange={(e) => updateData({ songGenre: e.target.value })}
+        >
+          <option value="">Select a music genre</option>
+          <option>Nursery Rhymes</option>
+          <option>Lullaby</option>
+          <option>Action Songs</option>
+          <option>Learning Songs</option>
+          <option>Dance Songs</option>
+          <option>Animal Songs</option>
+          <option>Space Songs</option>
+        </select>
       </div>
     </>
   );

@@ -2,11 +2,9 @@ import ProgressBar from "./ProgressBar";
 import ChildProfile from "../pages/onboarding/ChildProfile";
 import SpeechInfo from "../pages/onboarding/SpeechInfo";
 import LearningPreferences from "../pages/onboarding/LearningPreferences";
-import TherapistSetup from "../pages/onboarding/TherapistSetup";
-import HeadsetSetup from "../pages/onboarding/HeadsetSetup";
 import ParentGuardian from "../pages/onboarding/ParentGuardian";
 import PrivacyConsent from "../pages/onboarding/PrivacyConsent";
-import Dashboard from "./Dashboard";
+import Dashboard from "../pages/Dashboard";
 import { useOnboarding } from "../context/OnboardingContext";
 
 export default function StepLayout() {
@@ -15,44 +13,25 @@ export default function StepLayout() {
   const canContinue = () => {
     switch (step) {
       case 0:
-        return (
-          data.firstName?.trim() &&
-          data.dob &&
-          data.primaryLanguage
-        );
+        return data.firstName?.trim() && data.gender && data.dob && data.primaryLanguage;
 
       case 1:
-        return (
-          data.communication &&
-          data.difficultWords?.trim()
-        );
+        return data.communication && data.difficultWords?.trim();
 
       case 2:
-        return (
-          data.animal?.trim() &&
-          data.theme &&
-          data.rhyme?.trim()
-        );
+        return data.storyTheme && data.songGenre;
 
       case 3:
-        return !data.therapist || data.therapistName?.trim();
-
-      case 4:
-        return data.headsetConnected;
-
-      case 5:
         return (
           data.guardianName?.trim() &&
           data.relationship &&
-          data.email?.trim() &&
-          data.phone?.trim()
+          data.email?.trim()
         );
 
-      case 6:
+      case 4:
         return (
           data.consentRecording &&
           data.consentAI &&
-          data.consentTherapist &&
           data.consentTerms
         );
 
@@ -64,30 +43,28 @@ export default function StepLayout() {
   const handleNext = () => {
     if (!canContinue()) return;
 
-    if (step === 6) {
-      setStep(7);
+    if (step === 4) {
+      setStep(5);
     } else {
       setStep(step + 1);
     }
   };
 
-  // After onboarding, show Dashboard
-  if (step === 7) {
+  if (step === 5) {
     return <Dashboard />;
   }
 
   return (
     <div className="page">
       <div className="card">
+
         <ProgressBar />
 
         {step === 0 && <ChildProfile />}
         {step === 1 && <SpeechInfo />}
         {step === 2 && <LearningPreferences />}
-        {step === 3 && <TherapistSetup />}
-        {step === 4 && <HeadsetSetup />}
-        {step === 5 && <ParentGuardian />}
-        {step === 6 && <PrivacyConsent />}
+        {step === 3 && <ParentGuardian />}
+        {step === 4 && <PrivacyConsent />}
 
         <div className="buttons">
           {step > 0 && (
@@ -99,10 +76,14 @@ export default function StepLayout() {
             </button>
           )}
 
-          <button onClick={handleNext} disabled={!canContinue()}>
-            {step === 6 ? "Finish Setup" : "Continue"}
+          <button
+            onClick={handleNext}
+            disabled={!canContinue()}
+          >
+            {step === 4 ? "Finish Setup" : "Continue"}
           </button>
         </div>
+
       </div>
     </div>
   );
