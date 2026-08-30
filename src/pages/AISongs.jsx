@@ -1,18 +1,50 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
 import { useOnboarding } from "../context/OnboardingContext";
 import { useProgress } from "../context/ProgressContext";
+
 import "./AISongs.css";
 
 /*
-  Melodic Voice - AI Songs MVP
+  ============================================================
+  MELODIC VOICE - AI SONGS
+  ============================================================
 
-  The MVP:
-  - Reads the child's difficult sound/word from onboarding.
-  - Selects age-appropriate practice words.
+  Purpose:
+  - Reads the child's difficult sound/letter from onboarding.
+  - Selects practice words related to that challenge.
   - Creates personalized lyrics.
   - Creates a simple melody in the browser.
-  - Speaks the lyrics aloud so young children do not need to read.
+  - Speaks the lyrics aloud so a young child does not need
+    to read.
+  - Allows the child to sing using the microphone.
+  - Records the singing during the practice session.
+  - Awards XP after singing is completed.
+
+  Example:
+
+  Child challenge: S
+
+  Practice words:
+  snake
+  snail
+  sun
+  song
+  star
+  school
+
+  The song then repeatedly practices those words.
 */
+
+
+/* ============================================================
+   PRACTICE WORD BANKS
+   ============================================================ */
 
 const SOUND_WORD_BANK = {
   s: [
@@ -171,34 +203,217 @@ const SOUND_WORD_BANK = {
   ],
 };
 
+
+/* ============================================================
+   LETTER WORD BANK
+   ============================================================ */
+
 const LETTER_WORD_BANK = {
-  a: ["apple", "ant", "animal", "astronaut", "apple"],
-  b: ["ball", "baby", "bird", "banana", "bear"],
-  c: ["cat", "car", "cookie", "cake", "cloud"],
-  d: ["dog", "duck", "dinosaur", "dance", "drum"],
-  e: ["elephant", "egg", "ear", "eagle", "excited"],
-  f: ["fish", "fox", "frog", "flower", "fun"],
-  g: ["goat", "garden", "gift", "giraffe", "green"],
-  h: ["hat", "horse", "house", "happy", "hop"],
-  i: ["ice", "igloo", "insect", "island", "inside"],
-  j: ["jam", "jelly", "jump", "jungle", "jolly"],
-  k: ["kite", "king", "kangaroo", "kitten", "key"],
-  l: ["lion", "ladybug", "leaf", "little", "love"],
-  m: ["moon", "monkey", "mouse", "music", "moon"],
-  n: ["nose", "nest", "night", "noodle", "nice"],
-  o: ["octopus", "orange", "ocean", "owl", "open"],
-  p: ["puppy", "panda", "pizza", "pig", "play"],
-  q: ["queen", "quiet", "quick", "quilt"],
-  r: ["rabbit", "rainbow", "rocket", "robot", "rain"],
-  s: ["snake", "snail", "sun", "song", "star"],
-  t: ["tiger", "train", "tree", "toy", "turtle"],
-  u: ["umbrella", "under", "up", "unicorn"],
-  v: ["van", "violin", "violet", "very"],
-  w: ["whale", "water", "window", "wonder", "wave"],
-  x: ["fox", "box", "six", "mix"],
-  y: ["yellow", "yo-yo", "yummy", "yarn"],
-  z: ["zebra", "zoo", "zip", "buzz"],
+  a: [
+    "apple",
+    "ant",
+    "animal",
+    "astronaut",
+  ],
+
+  b: [
+    "ball",
+    "baby",
+    "bird",
+    "banana",
+    "bear",
+  ],
+
+  c: [
+    "cat",
+    "car",
+    "cookie",
+    "cake",
+    "cloud",
+  ],
+
+  d: [
+    "dog",
+    "duck",
+    "dinosaur",
+    "dance",
+    "drum",
+  ],
+
+  e: [
+    "elephant",
+    "egg",
+    "ear",
+    "eagle",
+    "excited",
+  ],
+
+  f: [
+    "fish",
+    "fox",
+    "frog",
+    "flower",
+    "fun",
+  ],
+
+  g: [
+    "goat",
+    "garden",
+    "gift",
+    "giraffe",
+    "green",
+  ],
+
+  h: [
+    "hat",
+    "horse",
+    "house",
+    "happy",
+    "hop",
+  ],
+
+  i: [
+    "ice",
+    "igloo",
+    "insect",
+    "island",
+    "inside",
+  ],
+
+  j: [
+    "jam",
+    "jelly",
+    "jump",
+    "jungle",
+    "jolly",
+  ],
+
+  k: [
+    "kite",
+    "king",
+    "kangaroo",
+    "kitten",
+    "key",
+  ],
+
+  l: [
+    "lion",
+    "ladybug",
+    "leaf",
+    "little",
+    "love",
+  ],
+
+  m: [
+    "moon",
+    "monkey",
+    "mouse",
+    "music",
+  ],
+
+  n: [
+    "nose",
+    "nest",
+    "night",
+    "noodle",
+    "nice",
+  ],
+
+  o: [
+    "octopus",
+    "orange",
+    "ocean",
+    "owl",
+    "open",
+  ],
+
+  p: [
+    "puppy",
+    "panda",
+    "pizza",
+    "pig",
+    "play",
+  ],
+
+  q: [
+    "queen",
+    "quiet",
+    "quick",
+    "quilt",
+  ],
+
+  r: [
+    "rabbit",
+    "rainbow",
+    "rocket",
+    "robot",
+    "rain",
+  ],
+
+  s: [
+    "snake",
+    "snail",
+    "sun",
+    "song",
+    "star",
+  ],
+
+  t: [
+    "tiger",
+    "train",
+    "tree",
+    "toy",
+    "turtle",
+  ],
+
+  u: [
+    "umbrella",
+    "under",
+    "up",
+    "unicorn",
+  ],
+
+  v: [
+    "van",
+    "violin",
+    "violet",
+    "very",
+  ],
+
+  w: [
+    "whale",
+    "water",
+    "window",
+    "wonder",
+    "wave",
+  ],
+
+  x: [
+    "fox",
+    "box",
+    "six",
+    "mix",
+  ],
+
+  y: [
+    "yellow",
+    "yo-yo",
+    "yummy",
+    "yarn",
+  ],
+
+  z: [
+    "zebra",
+    "zoo",
+    "zip",
+    "buzz",
+  ],
 };
+
+
+/* ============================================================
+   MUSIC STYLES
+   ============================================================ */
 
 const GENRE_STYLES = {
   "Nursery Rhymes": {
@@ -244,14 +459,22 @@ const GENRE_STYLES = {
   },
 };
 
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+
 function normalize(value) {
   return String(value || "")
     .trim()
     .toLowerCase();
 }
 
+
 function getFirstValue(value) {
-  if (!value) return "";
+  if (!value) {
+    return "";
+  }
 
   if (Array.isArray(value)) {
     return value[0] || "";
@@ -263,151 +486,232 @@ function getFirstValue(value) {
     .filter(Boolean)[0] || "";
 }
 
-/*
-  Find the main speech challenge.
-*/
+
+/* ============================================================
+   FIND CHILD'S MAIN SPEECH CHALLENGE
+   ============================================================ */
+
 function getPracticeChallenge(data) {
-  const difficultSounds = Array.isArray(data?.difficultSounds)
+  const difficultSounds = Array.isArray(
+    data?.difficultSounds
+  )
     ? data.difficultSounds
     : [];
 
-  const firstSound = difficultSounds.find(Boolean);
+  const firstSound =
+    difficultSounds.find(Boolean);
 
   if (firstSound) {
     return normalize(firstSound);
   }
 
-  const difficultWord = getFirstValue(data?.difficultWords);
+  const difficultWord =
+    getFirstValue(data?.difficultWords);
 
   if (difficultWord) {
-    return difficultWord;
+    return normalize(difficultWord);
   }
 
   return "s";
 }
 
-/*
-  Select practice words based on the child's challenge.
-*/
-function getPracticeWords(challenge) {
-  const normalizedChallenge = normalize(challenge);
 
-  // Exact sound match.
-  if (SOUND_WORD_BANK[normalizedChallenge]) {
-    return SOUND_WORD_BANK[normalizedChallenge];
+/* ============================================================
+   FIND PRACTICE WORDS
+   ============================================================ */
+
+function getPracticeWords(challenge) {
+  const normalizedChallenge =
+    normalize(challenge);
+
+  /*
+    Exact sound match.
+  */
+
+  if (
+    SOUND_WORD_BANK[
+      normalizedChallenge
+    ]
+  ) {
+    return SOUND_WORD_BANK[
+      normalizedChallenge
+    ];
   }
 
-  // Exact letter match.
+
+  /*
+    Exact letter match.
+  */
+
   if (
     normalizedChallenge.length === 1 &&
-    LETTER_WORD_BANK[normalizedChallenge]
+    LETTER_WORD_BANK[
+      normalizedChallenge
+    ]
   ) {
-    return LETTER_WORD_BANK[normalizedChallenge];
+    return LETTER_WORD_BANK[
+      normalizedChallenge
+    ];
   }
 
-  // If the challenge is a word, find words containing its first letter.
-  const firstLetter = normalizedChallenge.charAt(0);
 
-  if (LETTER_WORD_BANK[firstLetter]) {
-    return LETTER_WORD_BANK[firstLetter];
+  /*
+    If a word was entered,
+    use its first letter.
+  */
+
+  const firstLetter =
+    normalizedChallenge.charAt(0);
+
+  if (
+    LETTER_WORD_BANK[firstLetter]
+  ) {
+    return LETTER_WORD_BANK[
+      firstLetter
+    ];
   }
+
+
+  /*
+    Safe fallback.
+  */
 
   return SOUND_WORD_BANK.s;
 }
 
-/*
-  Pick a small group of words for the song.
-*/
-function selectWords(words) {
-  const uniqueWords = [...new Set(words)];
 
-  return uniqueWords.slice(0, 6);
+/* ============================================================
+   SELECT SIX UNIQUE WORDS
+   ============================================================ */
+
+function selectWords(words) {
+  return [
+    ...new Set(words),
+  ].slice(0, 6);
 }
 
-/*
-  Create lyrics according to the selected genre.
-*/
+
+/* ============================================================
+   CREATE PERSONALIZED LYRICS
+   ============================================================ */
+
 function createLyrics({
   challenge,
   words,
   genre,
   childName,
+  seed = 0,
 }) {
-  const name = childName || "friend";
+  const name =
+    childName || "friend";
 
-  const word1 = words[0] || challenge;
-  const word2 = words[1] || word1;
-  const word3 = words[2] || word1;
-  const word4 = words[3] || word2;
+  const word1 =
+    words[0] || challenge;
+
+  const word2 =
+    words[1] || word1;
+
+  const word3 =
+    words[2] || word1;
+
+  const word4 =
+    words[3] || word2;
+
+  const sparkleLine =
+    seed % 2 === 0
+      ? `${name} bounces and sings, hooray!`
+      : `${name} sways and sings, hello day!`;
+
+
+  /* Lullaby */
 
   if (genre === "Lullaby") {
     return [
-      `Goodnight ${word1}, soft and slow`,
-      `${name}, close your eyes and let dreams grow`,
-      `${word2} and ${word3}, shining bright`,
-      `Sing your special sounds tonight`,
+      `Goodnight ${word1}, soft and slow, low and slow`,
+      `${name}, close your eyes and dream in a glow`,
+      `${word2} and ${word3}, twinkle, twinkle bright`,
+      `${sparkleLine}`,
     ];
   }
 
+
+  /* Animal Songs */
+
   if (genre === "Animal Songs") {
     return [
-      `A little ${word1} comes to play`,
-      `A little ${word2} sings today`,
-      `${word3} and ${word4}, sing along`,
-      `${name} is singing a happy song`,
+      `${word1}, ${word1}, hop and play`,
+      `${word2}, ${word2}, sing all day`,
+      `${word3} and ${word4}, clap, clap, hooray!`,
+      `${sparkleLine}`,
     ];
   }
+
+
+  /* Action Songs */
 
   if (genre === "Action Songs") {
     return [
       `${word1}, ${word1}, jump up high`,
       `${word2}, ${word2}, touch the sky`,
-      `Clap for ${word3}, stomp for ${word4}`,
-      `Sing with ${name} once more!`,
+      `Clap for ${word3}, stomp for ${word4}, stomp, stomp, wow!`,
+      `${sparkleLine}`,
     ];
   }
+
+
+  /* Dance Songs */
 
   if (genre === "Dance Songs") {
     return [
       `${word1}, ${word2}, dance with me`,
       `${word3}, ${word4}, one, two, three`,
-      `Turn around and sing along`,
-      `${name} is dancing to the song`,
+      `Turn around and wiggle, wiggle, sway`,
+      `${sparkleLine}`,
     ];
   }
 
+
+  /* Space Songs */
+
   if (genre === "Space Songs") {
     return [
-      `${word1} is flying like a star`,
-      `${word2} is travelling very far`,
+      `${word1} is zooming like a star`,
+      `${word2} is soaring very far`,
       `${word3} is shining in the night`,
-      `${name} sings and takes flight`,
+      `${sparkleLine}`,
     ];
   }
+
+
+  /* Nursery Rhymes */
 
   if (genre === "Nursery Rhymes") {
     return [
       `${word1}, ${word1}, sing with me`,
       `${word2} sounds happy as can be`,
       `${word3}, ${word4}, here we go`,
-      `${name} sings them nice and slow`,
+      `${sparkleLine}`,
     ];
   }
 
-  // Learning Songs
+
+  /* Default - Learning Songs */
+
   return [
-    `${word1}, ${word1}, sing with me`,
-    `${word2}, ${word2}, one, two, three`,
+    `${word1}, ${word1}, sing and sway`,
+    `${word2}, ${word2}, hooray, hooray!`,
     `${word3}, ${word4}, say them strong`,
-    `${name} is learning through a song`,
+    `${sparkleLine}`,
   ];
 }
 
-/*
-  Create a simple melody.
-*/
-function createNoteSequence(genre) {
-  const baseNotes = {
+
+/* ============================================================
+   MELODY
+   ============================================================ */
+
+function createNoteSequence(genre, seed = 0) {
+  const baseMelodies = {
     "Nursery Rhymes": [
       261.63,
       293.66,
@@ -486,75 +790,214 @@ function createNoteSequence(genre) {
     ],
   };
 
-  return baseNotes[genre] || baseNotes["Learning Songs"];
+  const melody = baseMelodies[genre] || baseMelodies["Learning Songs"];
+  const rotation = seed % melody.length;
+
+  return melody
+    .slice(rotation)
+    .concat(melody.slice(0, rotation))
+    .map((note, index) =>
+      index % 2 === 0 ? note * (1 + (seed % 3) * 0.02) : note
+    );
 }
 
+
+/* ============================================================
+   MAIN COMPONENT
+   ============================================================ */
+
 export default function AISongs() {
-  const { data } = useOnboarding();
-  const { listenToSong, singSong } = useProgress();
 
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [hasListened, setHasListened] = useState(false);
-  const [hasSung, setHasSung] = useState(false);
+  const { data } =
+    useOnboarding();
 
-  const audioContextRef = useRef(null);
-  const timersRef = useRef([]);
+  const {
+    listenToSong,
+    singSong,
+  } = useProgress();
 
-  const childName = data?.firstName || "friend";
 
-  const genre = data?.songGenre || "Learning Songs";
+  /* ----------------------------------------------------------
+     Playback state
+     ---------------------------------------------------------- */
 
-  const challenge = useMemo(
-    () => getPracticeChallenge(data),
-    [data]
-  );
+  const [
+    isPlaying,
+    setIsPlaying,
+  ] = useState(false);
 
-  const practiceWords = useMemo(
-    () => selectWords(getPracticeWords(challenge)),
-    [challenge]
-  );
+  const [
+    hasListened,
+    setHasListened,
+  ] = useState(false);
+
+
+  /* ----------------------------------------------------------
+     Singing state
+     ---------------------------------------------------------- */
+
+  const [
+    hasSung,
+    setHasSung,
+  ] = useState(false);
+
+  const [
+    songSeed,
+    setSongSeed,
+  ] = useState(0);
+
+  const [
+    isRecording,
+    setIsRecording,
+  ] = useState(false);
+
+  const [
+    recordingError,
+    setRecordingError,
+  ] = useState("");
+
+
+  /* ----------------------------------------------------------
+     Audio references
+     ---------------------------------------------------------- */
+
+  const audioContextRef =
+    useRef(null);
+
+  const timersRef =
+    useRef([]);
+
+  const mediaRecorderRef =
+    useRef(null);
+
+  const audioChunksRef =
+    useRef([]);
+
+
+  /* ----------------------------------------------------------
+     Child information
+     ---------------------------------------------------------- */
+
+  const childName =
+    data?.firstName || "friend";
+
+  const genre =
+    data?.songGenre ||
+    "Learning Songs";
+
+
+  /* ----------------------------------------------------------
+     Speech challenge
+     ---------------------------------------------------------- */
+
+  const challenge =
+    useMemo(
+      () =>
+        getPracticeChallenge(data),
+      [data]
+    );
+
+
+  /* ----------------------------------------------------------
+     Practice words
+     ---------------------------------------------------------- */
+
+  const practiceWords =
+    useMemo(
+      () =>
+        selectWords(
+          getPracticeWords(
+            challenge
+          )
+        ),
+      [challenge]
+    );
+
+
+  /* ----------------------------------------------------------
+     Music style
+     ---------------------------------------------------------- */
 
   const style =
-    GENRE_STYLES[genre] || GENRE_STYLES["Learning Songs"];
+    GENRE_STYLES[genre] ||
+    GENRE_STYLES[
+      "Learning Songs"
+    ];
 
-  const lyrics = useMemo(
-    () =>
-      createLyrics({
+
+  /* ----------------------------------------------------------
+     Lyrics
+     ---------------------------------------------------------- */
+
+  const lyrics =
+    useMemo(
+      () =>
+        createLyrics({
+          challenge,
+          words: practiceWords,
+          genre,
+          childName,
+          seed: songSeed,
+        }),
+      [
         challenge,
-        words: practiceWords,
+        practiceWords,
         genre,
         childName,
-      }),
-    [challenge, practiceWords, genre, childName]
-  );
+        songSeed,
+      ]
+    );
 
-  /*
-    Clean up audio when leaving the page.
-  */
-  useEffect(() => {
-    return () => {
-      stopSong();
-    };
-  }, []);
+
+  /* ==========================================================
+     STOP SONG
+     ========================================================== */
 
   function stopSong() {
-    timersRef.current.forEach((timer) => {
-      clearTimeout(timer);
-    });
+
+    timersRef.current.forEach(
+      (timer) => {
+        clearTimeout(timer);
+      }
+    );
 
     timersRef.current = [];
 
-    if ("speechSynthesis" in window) {
+
+    /*
+      Stop text-to-speech.
+    */
+
+    if (
+      "speechSynthesis" in window
+    ) {
       window.speechSynthesis.cancel();
     }
 
-    if (audioContextRef.current) {
-      audioContextRef.current.close().catch(() => {});
-      audioContextRef.current = null;
+
+    /*
+      Close Web Audio context.
+    */
+
+    if (
+      audioContextRef.current
+    ) {
+      audioContextRef.current
+        .close()
+        .catch(() => {});
+
+      audioContextRef.current =
+        null;
     }
+
 
     setIsPlaying(false);
   }
+
+
+  /* ==========================================================
+     PLAY ONE NOTE
+     ========================================================== */
 
   function playNote(
     context,
@@ -563,325 +1006,1017 @@ export default function AISongs() {
     duration,
     wave
   ) {
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
+
+    const oscillator =
+      context.createOscillator();
+
+    const gain =
+      context.createGain();
+
 
     oscillator.type = wave;
+
     oscillator.frequency.setValueAtTime(
       frequency,
       startTime
     );
 
-    gain.gain.setValueAtTime(0.0001, startTime);
+
+    /*
+      Gentle fade in.
+    */
+
+    gain.gain.setValueAtTime(
+      0.0001,
+      startTime
+    );
 
     gain.gain.exponentialRampToValueAtTime(
-      0.18,
+      0.16,
       startTime + 0.03
     );
+
+
+    /*
+      Gentle fade out.
+    */
 
     gain.gain.exponentialRampToValueAtTime(
       0.0001,
       startTime + duration
     );
 
+
     oscillator.connect(gain);
-    gain.connect(context.destination);
+
+    gain.connect(
+      context.destination
+    );
+
 
     oscillator.start(startTime);
-    oscillator.stop(startTime + duration + 0.05);
+
+    oscillator.stop(
+      startTime + duration
+    );
   }
 
-  /*
-    Speak one line at a time.
-    This is important because a 3-year-old may not be able
-    to read the lyrics.
-  */
-  function speakLyrics(beat) {
-    if (!("speechSynthesis" in window)) {
+
+  /* ==========================================================
+     SPEAK LYRICS
+     ========================================================== */
+
+  function speakLyrics() {
+
+    if (
+      !("speechSynthesis" in window)
+    ) {
       return;
     }
 
-    window.speechSynthesis.cancel();
 
-    lyrics.forEach((line, index) => {
-      const utterance =
-        new SpeechSynthesisUtterance(line);
+    const fullLyrics =
+      lyrics.join(". ");
 
-      if (genre === "Lullaby") {
-        utterance.rate = 0.68;
-      } else if (genre === "Action Songs") {
-        utterance.rate = 0.95;
-      } else if (genre === "Dance Songs") {
-        utterance.rate = 0.9;
-      } else {
-        utterance.rate = 0.8;
-      }
 
-      utterance.pitch = 1.15;
-      utterance.volume = 1;
+    const utterance =
+      new SpeechSynthesisUtterance(
+        fullLyrics
+      );
 
-      /*
-        Each lyric line starts after four beats.
-      */
-      const delay = index * beat * 4 * 1000;
 
-      const timer = setTimeout(() => {
-        if (isPlaying) {
-          window.speechSynthesis.speak(utterance);
-        }
-      }, delay);
+    /*
+      Child-friendly speaking speed.
+    */
 
-      timersRef.current.push(timer);
-    });
+    utterance.rate = 0.82;
+
+    utterance.pitch = 1.12;
+
+    utterance.volume = 1;
+
+
+    /*
+      Mark the song as completed
+      when the spoken lyrics finish.
+    */
+
+    utterance.onend = () => {
+      setHasListened(true);
+      setIsPlaying(false);
+    };
+
+
+    utterance.onerror = () => {
+      setHasListened(true);
+      setIsPlaying(false);
+    };
+
+
+    window.speechSynthesis.speak(
+      utterance
+    );
   }
 
-  function playSong() {
+
+  /* ==========================================================
+     PLAY SONG
+     ========================================================== */
+
+  async function playSong() {
+
+    /*
+      If already playing,
+      stop the current song.
+    */
+
     if (isPlaying) {
       stopSong();
       return;
     }
 
+
+    setRecordingError("");
+
+    setIsPlaying(true);
+
+
+    /*
+      Browser AudioContext.
+    */
+
     const AudioContext =
       window.AudioContext ||
       window.webkitAudioContext;
 
-    /*
-      If Web Audio is unavailable, still speak the song.
-    */
+
     if (!AudioContext) {
-      speakLyricsOnly();
+
+      /*
+        Fallback:
+        still speak the lyrics.
+      */
+
+      speakLyrics();
+
+      listenToSong();
+
       return;
     }
 
-    const context = new AudioContext();
 
-    audioContextRef.current = context;
+    try {
 
-    if (context.state === "suspended") {
-      context.resume();
+      const context =
+        new AudioContext();
+
+      audioContextRef.current =
+        context;
+
+
+      if (
+        context.state ===
+        "suspended"
+      ) {
+        await context.resume();
+      }
+
+
+      const notes =
+        createNoteSequence(
+          genre,
+          songSeed
+        );
+
+
+      const beatDuration =
+        60 / style.bpm;
+
+
+      const noteDuration =
+        beatDuration * 0.82;
+
+
+      const startTime =
+        context.currentTime +
+        0.05;
+
+
+      /*
+        Play melody.
+      */
+
+      notes.forEach(
+        (frequency, index) => {
+
+          playNote(
+            context,
+            frequency,
+            startTime +
+              index *
+                beatDuration,
+            noteDuration,
+            style.wave
+          );
+
+        }
+      );
+
+
+      /*
+        Start speaking the lyrics
+        at the same time.
+      */
+
+      speakLyrics();
+
+
+      /*
+        Award listening XP once.
+      */
+
+      listenToSong();
+
+
+      /*
+        Safety timer in case
+        speech synthesis does not
+        fire its onend event.
+      */
+
+      const melodyDuration =
+        notes.length *
+          beatDuration +
+        1;
+
+
+      const timer =
+        setTimeout(() => {
+
+          setHasListened(true);
+
+          setIsPlaying(false);
+
+          if (
+            audioContextRef.current
+          ) {
+
+            audioContextRef.current
+              .close()
+              .catch(() => {});
+
+            audioContextRef.current =
+              null;
+          }
+
+        }, melodyDuration * 1000);
+
+
+      timersRef.current.push(
+        timer
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Song playback error:",
+        error
+      );
+
+
+      /*
+        If Web Audio fails,
+        use speech as fallback.
+      */
+
+      speakLyrics();
+
+      listenToSong();
+
+    }
+  }
+
+
+  /* ==========================================================
+     START MICROPHONE RECORDING
+     ========================================================== */
+
+  async function startRecording() {
+
+    setRecordingError("");
+
+
+    /*
+      Check browser support.
+    */
+
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
+
+      setRecordingError(
+        "Your browser does not support microphone recording."
+      );
+
+      return;
     }
 
-    setIsPlaying(true);
 
-    const beat = 60 / style.bpm;
+    try {
 
-    const notes = createNoteSequence(genre);
+      /*
+        Ask the child/parent
+        for microphone permission.
+      */
 
-    notes.forEach((frequency, index) => {
-      playNote(
-        context,
-        frequency,
-        context.currentTime + index * beat,
-        beat * 0.8,
-        style.wave
+      const stream =
+        await navigator.mediaDevices.getUserMedia(
+          {
+            audio: true,
+          }
+        );
+
+
+      /*
+        Choose a supported
+        recording format.
+      */
+
+      let options = {};
+
+      if (
+        MediaRecorder.isTypeSupported(
+          "audio/webm"
+        )
+      ) {
+        options = {
+          mimeType: "audio/webm",
+        };
+      } else if (
+        MediaRecorder.isTypeSupported(
+          "audio/mp4"
+        )
+      ) {
+        options = {
+          mimeType: "audio/mp4",
+        };
+      }
+
+
+      const recorder =
+        new MediaRecorder(
+          stream,
+          options
+        );
+
+
+      mediaRecorderRef.current =
+        recorder;
+
+
+      audioChunksRef.current =
+        [];
+
+
+      /*
+        Save incoming audio.
+      */
+
+      recorder.ondataavailable =
+        (event) => {
+
+          if (
+            event.data &&
+            event.data.size > 0
+          ) {
+
+            audioChunksRef.current.push(
+              event.data
+            );
+
+          }
+
+        };
+
+
+      /*
+        When recording stops.
+      */
+
+      recorder.onstop = () => {
+
+        /*
+          Stop microphone tracks.
+        */
+
+        stream
+          .getTracks()
+          .forEach(
+            (track) =>
+              track.stop()
+          );
+
+
+        /*
+          Create the recorded
+          audio file in memory.
+
+          This is ready for future
+          speech-analysis integration.
+        */
+
+        const mimeType =
+          recorder.mimeType ||
+          "audio/webm";
+
+
+        const recordedBlob =
+          new Blob(
+            audioChunksRef.current,
+            {
+              type: mimeType,
+            }
+          );
+
+
+        console.log(
+          "Melodic Voice singing recording:",
+          recordedBlob
+        );
+
+
+        /*
+          Singing practice completed.
+        */
+
+        if (!hasSung) {
+
+          singSong();
+
+          setHasSung(true);
+
+        }
+
+
+        setIsRecording(false);
+
+      };
+
+
+      recorder.onerror = (
+        event
+      ) => {
+
+        console.error(
+          "Recording error:",
+          event
+        );
+
+
+        stream
+          .getTracks()
+          .forEach(
+            (track) =>
+              track.stop()
+          );
+
+
+        setIsRecording(false);
+
+        setRecordingError(
+          "Something went wrong while recording. Please try again."
+        );
+
+      };
+
+
+      /*
+        Begin recording.
+      */
+
+      recorder.start();
+
+
+      setIsRecording(true);
+
+    } catch (error) {
+
+      console.error(
+        "Microphone permission error:",
+        error
       );
-    });
+
+
+      setIsRecording(false);
+
+
+      if (
+        error?.name ===
+        "NotAllowedError"
+      ) {
+
+        setRecordingError(
+          "Microphone access was blocked. Please click the microphone icon in your browser address bar and allow access."
+        );
+
+      } else if (
+        error?.name ===
+        "NotFoundError"
+      ) {
+
+        setRecordingError(
+          "No microphone was found. Please connect a microphone or headset."
+        );
+
+      } else {
+
+        setRecordingError(
+          "We couldn't start the microphone. Please try again."
+        );
+
+      }
+
+    }
+  }
+
+
+  function generateNewSong() {
+    setSongSeed((previous) => previous + 1);
+    setHasSung(false);
+    setHasListened(false);
+    setIsPlaying(false);
+    setRecordingError("");
+    stopSong();
+  }
+
+  /* ==========================================================
+     STOP MICROPHONE RECORDING
+     ========================================================== */
+
+  function stopRecording() {
+
+    const recorder =
+      mediaRecorderRef.current;
+
+
+    if (
+      recorder &&
+      recorder.state !==
+        "inactive"
+    ) {
+
+      recorder.stop();
+
+    }
+  }
+
+
+  /* ==========================================================
+     SING BUTTON
+     ========================================================== */
+
+  async function handleSing() {
+
+    setRecordingError("");
+
 
     /*
-      Start the spoken lyrics.
+      If already recording,
+      clicking the button stops it.
     */
-    speakLyrics(beat);
+
+    if (isRecording) {
+
+      stopRecording();
+
+      return;
+    }
+
 
     /*
-      Keep the song long enough for all four lyric lines.
+      Do not allow another
+      singing session after completion.
     */
-    const totalDuration =
-      Math.max(notes.length * beat, beat * 16) + 2;
 
-    const finishTimer = setTimeout(() => {
-      setIsPlaying(false);
+    if (hasSung) {
+      return;
+    }
 
-      if ("speechSynthesis" in window) {
+
+    /*
+      Start microphone recording.
+    */
+
+    await startRecording();
+  }
+
+
+  /* ==========================================================
+     CLEANUP
+     ========================================================== */
+
+  useEffect(() => {
+
+    return () => {
+
+      /*
+        Stop song.
+      */
+
+      timersRef.current.forEach(
+        (timer) => {
+          clearTimeout(timer);
+        }
+      );
+
+
+      /*
+        Stop speech synthesis.
+      */
+
+      if (
+        "speechSynthesis" in window
+      ) {
         window.speechSynthesis.cancel();
       }
 
-      if (audioContextRef.current) {
+
+      /*
+        Close audio context.
+      */
+
+      if (
+        audioContextRef.current
+      ) {
+
         audioContextRef.current
           .close()
           .catch(() => {});
 
-        audioContextRef.current = null;
       }
-    }, totalDuration * 1000);
 
-    timersRef.current.push(finishTimer);
 
-    /*
-      Award +10 XP only once for listening.
-    */
-    if (!hasListened) {
-      setHasListened(true);
-      listenToSong();
-    }
-  }
+      /*
+        Stop microphone if
+        user leaves the page.
+      */
 
-  function speakLyricsOnly() {
-    if (!("speechSynthesis" in window)) {
-      return;
-    }
+      const recorder =
+        mediaRecorderRef.current;
 
-    window.speechSynthesis.cancel();
 
-    const utterance =
-      new SpeechSynthesisUtterance(
-        lyrics.join(". ")
-      );
+      if (
+        recorder &&
+        recorder.state !==
+          "inactive"
+      ) {
 
-    utterance.rate = 0.8;
-    utterance.pitch = 1.15;
-    utterance.volume = 1;
+        recorder.stop();
 
-    window.speechSynthesis.speak(utterance);
+      }
 
-    if (!hasListened) {
-      setHasListened(true);
-      listenToSong();
-    }
-  }
+    };
 
-  function handleSing() {
-    if (!hasListened || hasSung) {
-      return;
-    }
+  }, []);
 
-    singSong();
-    setHasSung(true);
-  }
+
+  /* ==========================================================
+     RENDER
+     ========================================================== */
 
   return (
-    <div className="ai-songs">
+    <main className="ai-songs">
+
+      {/* -----------------------------------------------------
+          Header
+          ----------------------------------------------------- */}
+
       <header className="songs-header">
-        <div className="songs-music-icon">
+
+        <div
+          className="songs-music-icon"
+          aria-hidden="true"
+        >
           🎵
         </div>
 
-        <h1>Your AI Song</h1>
+
+        <h1>
+          Your AI Song
+        </h1>
+
 
         <p>
-          A personalized song created for
-          your speech practice.
+          A personalized song made
+          around the sound or letter
+          you are practicing.
         </p>
+
       </header>
+
+
+      {/* -----------------------------------------------------
+          Main personalized card
+          ----------------------------------------------------- */}
 
       <section className="personalized-song-card">
 
+        {/* Badge */}
+
         <div className="song-badge">
-          ✨ MADE FOR {childName.toUpperCase()}
+          ✨ MADE FOR{" "}
+          {childName.toUpperCase()}
         </div>
+
+
+        {/* Practice challenge */}
 
         <h2>
-          Practice the "{challenge}" sound
+          Practice the “
+          {challenge}
+          ” sound
         </h2>
 
+
         <p className="song-description">
-          {genre} • Personalized for your
-          learning journey
+          {genre} • Your practice
+          words are built into the
+          song.
         </p>
 
-        {/* Practice words */}
-        <div className="practice-words-section">
-          <h3>🎯 Today's Practice Words</h3>
+
+        {/* -------------------------------------------------
+            Practice words
+            ------------------------------------------------- */}
+
+        <div className="practice-words">
+
+          <div className="practice-words-title">
+            🎯 Practice Words
+          </div>
+
 
           <div className="practice-word-list">
-            {practiceWords.map((word) => (
-              <span
-                className="practice-word"
-                key={word}
-              >
-                {word}
-              </span>
-            ))}
+
+            {practiceWords.map(
+              (word) => (
+
+                <span
+                  key={word}
+                  className="practice-word"
+                >
+                  {word}
+                </span>
+
+              )
+            )}
+
           </div>
+
         </div>
 
-        {/* Song visual */}
-        <div className="song-player-visual">
-          <div
-            className={`sound-bars ${
-              isPlaying ? "active" : ""
-            }`}
-            aria-hidden="true"
-          >
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
 
-          <div className="music-note">
-            {isPlaying ? "🎶" : "🎵"}
-          </div>
+        {/* -------------------------------------------------
+            Audio visualizer
+            ------------------------------------------------- */}
+
+        <div
+          className={`audio-visual ${
+            isPlaying
+              ? "playing"
+              : ""
+          }`}
+          aria-hidden="true"
+        >
+
+          <div className="audio-bar" />
+
+          <div className="audio-bar" />
+
+          <div className="audio-bar" />
+
+          <div className="audio-bar" />
+
+          <div className="audio-bar" />
+
+        </div>
+
+
+        {/* -------------------------------------------------
+            Instruction
+            ------------------------------------------------- */}
+
+        <p className="listen-first-message">
+
+          🔊{" "}
+          {isPlaying
+            ? "Listen to your personalized song..."
+            : "Press the big button to hear your song"}
+
+        </p>
+
+
+        {/* -------------------------------------------------
+            Hear My Song
+            ------------------------------------------------- */}
+
+        <button
+          type="button"
+          className={`listen-button ${
+            isPlaying
+              ? "playing"
+              : ""
+          }`}
+          onClick={playSong}
+        >
+
+          {isPlaying
+            ? "⏹ Stop Song"
+            : "▶ Hear My Song"}
+
+        </button>
+
+        <button
+          type="button"
+          className="new-song-button"
+          onClick={generateNewSong}
+        >
+          ✨ New AI Song
+        </button>
+
+
+        {/* Listening XP */}
+
+        <p className="xp-note">
+
+          🎧 Listening to the song
+          = <strong>+10 XP</strong>
+
+        </p>
+
+
+        {/* -------------------------------------------------
+            Singing section
+            ------------------------------------------------- */}
+
+        <section className="sing-section">
+
+          <h3>
+            🎤 Ready to sing?
+          </h3>
+
 
           <p>
-            {isPlaying
-              ? "Listen to your song..."
-              : "Your song is ready!"}
+            Listen to the song first,
+            then try the practice words
+            yourself.
           </p>
-        </div>
 
-        {/* Lyrics for parent */}
+
+          {/* Sing button */}
+
+          <button
+            type="button"
+            className={`
+              sing-button
+              ${
+                isRecording
+                  ? "recording"
+                  : ""
+              }
+              ${
+                hasSung
+                  ? "completed"
+                  : ""
+              }
+            `}
+            onClick={handleSing}
+            disabled={hasSung}
+          >
+
+            {hasSung
+              ? "✓ Singing Complete • +20 XP"
+              : isRecording
+              ? "⏹ Stop Singing"
+              : "🎤 Sing With Me"}
+
+          </button>
+
+
+          {/* ------------------------------------------------
+              Recording message
+              ------------------------------------------------ */}
+
+          {isRecording && (
+
+            <p className="recording-message">
+
+              🎤 I'm listening!
+
+              <br />
+
+              Sing the practice words
+              with me.
+
+            </p>
+
+          )}
+
+
+          {/* ------------------------------------------------
+              Before recording
+              ------------------------------------------------ */}
+
+          {!isRecording &&
+            !hasSung && (
+
+              <p className="listen-first-message">
+
+                🎵 Press "Sing With Me"
+                and sing along with your
+                personalized song.
+
+              </p>
+
+            )}
+
+
+          {/* ------------------------------------------------
+              Completed
+              ------------------------------------------------ */}
+
+          {hasSung && (
+
+            <p className="success-message">
+
+              🌟 Amazing,{" "}
+              {childName}!
+
+              <br />
+
+              You completed your
+              singing practice and
+              earned <strong>20 XP</strong>.
+
+            </p>
+
+          )}
+
+
+          {/* ------------------------------------------------
+              Error
+              ------------------------------------------------ */}
+
+          {recordingError && (
+
+            <p className="recording-error">
+
+              ⚠️ {recordingError}
+
+            </p>
+
+          )}
+
+        </section>
+
+
+        {/* -------------------------------------------------
+            Parent lyrics
+            ------------------------------------------------- */}
+
         <details className="parent-lyrics">
+
           <summary>
             👨‍👩‍👧 Parent: View Song Words
           </summary>
 
+
           <div className="lyrics-box">
-            {lyrics.map((line, index) => (
-              <p key={index}>{line}</p>
-            ))}
+
+            <h3>
+              Song Lyrics
+            </h3>
+
+
+            {lyrics.map(
+              (line, index) => (
+
+                <p
+                  key={`${line}-${index}`}
+                >
+                  {line}
+                </p>
+
+              )
+            )}
+
           </div>
+
         </details>
 
-        {/* Main controls */}
-        <div className="song-actions">
-
-          <button
-            type="button"
-            className={`listen-button ${
-              isPlaying ? "playing" : ""
-            }`}
-            onClick={playSong}
-          >
-            {isPlaying
-              ? "⏹ Stop Song"
-              : "▶ Hear My Song"}
-          </button>
-
-          <div className="xp-note">
-            🎧 Listening to the song =
-            <strong> +10 XP</strong>
-          </div>
-
-          <button
-            type="button"
-            className={`sing-button ${
-              hasSung ? "completed" : ""
-            }`}
-            onClick={handleSing}
-            disabled={!hasListened || hasSung}
-          >
-            {hasSung
-              ? "✓ Song Sung +20 XP"
-              : "🎤 Now Sing It"}
-          </button>
-
-          {!hasListened && (
-            <p className="listen-first-message">
-              🎧 Listen to the song first.
-              Then you can sing along!
-            </p>
-          )}
-
-          {hasSung && (
-            <p className="success-message">
-              🌟 Amazing, {childName}!
-              You earned 20 XP for singing!
-            </p>
-          )}
-
-        </div>
       </section>
-    </div>
+
+    </main>
   );
 }

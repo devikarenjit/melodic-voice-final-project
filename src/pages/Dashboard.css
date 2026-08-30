@@ -1,490 +1,937 @@
-/* ===== DASHBOARD - MAIN CONTAINER ===== */
+/* =========================================================
+   MELodic Voice Dashboard
+   ========================================================= */
+
 .dashboard {
-	display: flex;
-	flex-direction: column;
-	background: #fafbff;
-	min-height: 100vh;
-	padding: 20px 24px;
-	gap: 20px;
-	max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  min-height: 100vh;
+
+  padding: 20px 24px;
+
+  background: #fafbff;
+
+  box-sizing: border-box;
 }
 
-/* ===== HEADER / TOP BAR ===== */
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
 .dash-header {
-	background: #ffffff;
-	border-radius: 12px;
-	padding: 16px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+
+  background: #ffffff;
+
+  border-radius: 16px;
+
+  padding: 18px;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+.dash-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 1 1 240px;
+}
+
+.dash-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 14px;
+  color: #1f2937;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.dash-brand:hover {
+  background: #f4f1ff;
+  transform: translateY(-1px);
+}
+
+.dash-brand-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eef2ff, #fdf2f8);
+  color: #4f46e5;
+  font-size: 22px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.dash-brand strong {
+  display: block;
+  font-size: 1.05rem;
+  color: #111827;
+}
+
+.dash-brand small {
+  display: block;
+  color: #6b7280;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
 }
 
 .dash-topbar {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	margin-bottom: 16px;
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 14px;
+  margin-bottom: 0;
+  flex: 1 1 280px;
 }
+
 
 .dash-profile {
-	display: flex;
-	align-items: center;
-	gap: 12px;
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
 }
+
 
 .dash-avatar {
-	width: 48px;
-	height: 48px;
-	border-radius: 50%;
-	object-fit: cover;
-	background: #f0f0f0;
+  width: 52px;
+  height: 52px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  background: #f1f1f5;
 }
+
+.dash-avatar--emoji {
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  background: linear-gradient(135deg, #f3ecff, #dff7ff);
+  border: 2px solid #e7e0ff;
+}
+
 
 .dash-profile div {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
 }
+
 
 .dash-profile strong {
-	font-size: 16px;
-	color: #1a1a1a;
-	font-weight: 600;
+  font-size: 17px;
+
+  font-weight: 700;
+
+  color: #1a1a1a;
 }
+
 
 .dash-profile small {
-	font-size: 12px;
-	color: #666;
+  font-size: 12px;
+
+  color: #666;
 }
+
 
 .dash-settings {
-	background: none;
-	border: none;
-	cursor: pointer;
-	color: #666;
-	padding: 8px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 8px;
-	transition: all 0.2s ease;
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+
+  padding: 0;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: transparent;
+
+  color: #666;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
+
 
 .dash-settings:hover {
-	background: #f5f5f5;
-	color: #1a1a1a;
+  background: #f2efff;
+
+  color: #5635d8;
+
+  transform: rotate(5deg);
 }
 
-/* ===== XP BAR ===== */
+
+/* =========================================================
+   XP
+   ========================================================= */
+
 .dash-xp-bar {
-	display: flex;
-	align-items: center;
-	gap: 12px;
+  display: flex;
+
+  align-items: center;
+
+  gap: 16px;
 }
+
 
 .xp-text {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 180px;
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  min-width: 180px;
+  font-weight: 800;
+  color: #1a1a1a;
 }
+
 
 .xp-text span:first-child {
-	font-size: 14px;
-	font-weight: 600;
-	color: #1a1a1a;
+  font-size: 14px;
+
+  font-weight: 800;
+
+  color: #1a1a1a;
 }
+
 
 .xp-level {
-	font-size: 12px;
-	color: #666;
-	font-weight: 500;
+  font-size: 12px;
+
+  font-weight: 600;
+
+  color: #777;
 }
+
 
 .xp-progress {
-	flex: 1;
-	height: 8px;
-	background: #e8e8e8;
-	border-radius: 4px;
-	overflow: hidden;
+  flex: 1;
+
+  height: 9px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #e8e8ee;
 }
+
 
 .xp-fill {
-	height: 100%;
-	background: linear-gradient(90deg, #6449e8, #3c25be);
-	border-radius: 4px;
-	transition: width 0.3s ease;
+  height: 100%;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #6449e8,
+      #3c25be
+    );
+
+  transition:
+    width 0.4s ease;
 }
 
-/* ===== HERO SECTION ===== */
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
 .dash-hero {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 24px;
-	padding: 40px;
-	border-radius: 16px;
-	align-items: center;
-	position: relative;
-	overflow: hidden;
-	min-height: 300px;
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  min-height: 390px;
+
+  padding: 46px;
+
+  border-radius: 28px;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
+
+  background-position: center right;
+
+  background-size: cover;
+
+  background-repeat: no-repeat;
+
+  isolation: isolate;
 }
+
+
+.dash-hero--girl {
+  background-position: center;
+}
+
+
+.dash-hero--boy {
+  background-position: center;
+}
+
+
+.hero-overlay {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: -1;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(255, 255, 255, 0.86) 35%,
+      rgba(255, 255, 255, 0.35) 62%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+}
+
 
 .hero-content {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-	z-index: 2;
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  max-width: 570px;
+
+  gap: 16px;
 }
+
+
+.hero-kicker {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.82);
+
+  color: #6449e8;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
 
 .dash-hero h1 {
-	font-size: 32px;
-	font-weight: 700;
-	color: #1a1a1a;
-	line-height: 1.2;
-	margin: 0;
+  margin: 0;
+
+  font-size: 44px;
+
+  line-height: 1.12;
+
+  font-weight: 900;
+
+  color: #172033;
+
+  max-width: 560px;
 }
+
 
 .dash-hero p {
-	font-size: 16px;
-	color: #555;
-	line-height: 1.5;
-	margin: 0;
+  margin: 0;
+
+  max-width: 500px;
+
+  font-size: 17px;
+
+  line-height: 1.55;
+
+  color: #4f5b70;
 }
+
 
 .hero-button {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: 8px;
-	padding: 12px 24px;
-	border: none;
-	border-radius: 8px;
-	font-size: 14px;
-	font-weight: 600;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	width: fit-content;
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 9px;
+
+  min-height: 54px;
+
+  padding: 0 24px;
+
+  border: none;
+
+  border-radius: 999px;
+
+  font-size: 16px;
+
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
+
 
 .hero-button.primary {
-	background: linear-gradient(135deg, #6449e8, #3c25be);
-	color: white;
+  color: white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #6449e8,
+      #3c25be
+    );
+
+  box-shadow:
+    0 8px 20px rgba(86, 53, 216, 0.28);
 }
+
 
 .hero-button.primary:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(100, 73, 232, 0.3);
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 12px 26px rgba(86, 53, 216, 0.34);
 }
 
-.hero-image {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1;
-}
 
-.hero-image img {
-	max-width: 100%;
-	height: auto;
-	object-fit: contain;
-}
+/* =========================================================
+   STREAK
+   ========================================================= */
 
-/* ===== STREAK CARD ===== */
 .dash-streak {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	background: linear-gradient(135deg, #fff5e6, #fff0d9);
-	padding: 16px 24px;
-	border-radius: 12px;
-	border-left: 4px solid #ff9a44;
+  display: flex;
+
+  align-items: center;
+
+  gap: 16px;
+
+  padding: 18px 24px;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #fff5e6,
+      #fff0d9
+    );
+
+  border-left: 5px solid #ff9a44;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.04);
 }
+
 
 .streak-icon {
-	font-size: 32px;
-	line-height: 1;
+  font-size: 34px;
+
+  line-height: 1;
 }
+
 
 .dash-streak div {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
 }
+
 
 .dash-streak strong {
-	font-size: 18px;
-	color: #1a1a1a;
+  font-size: 18px;
+
+  color: #1a1a1a;
 }
+
 
 .dash-streak small {
-	font-size: 12px;
-	color: #666;
+  font-size: 13px;
+
+  color: #666;
 }
 
-/* ===== CARDS SECTION ===== */
+
+/* =========================================================
+   ACTIVITY CARDS
+   ========================================================= */
+
 .dash-cards {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	gap: 16px;
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, 1fr);
+
+  gap: 18px;
 }
+
 
 .dash-card {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	padding: 24px;
-	border-radius: 12px;
-	text-decoration: none;
-	cursor: pointer;
-	transition: all 0.2s ease;
-	position: relative;
-	overflow: hidden;
+  position: relative;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  gap: 12px;
+
+  min-height: 205px;
+
+  padding: 24px;
+
+  border: none;
+
+  border-radius: 22px;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  overflow: hidden;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.dash-card::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	opacity: 0;
-	transition: opacity 0.2s ease;
-}
 
 .dash-card:hover {
-	transform: translateY(-4px);
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-5px);
+
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.10);
 }
 
-.dash-card:hover::before {
-	opacity: 0.05;
-}
 
 .dash-card--lilac {
-	background: #f0e8ff;
-	border: 1px solid #e0d4ff;
+  background: #f0e8ff;
+
+  border: 1px solid #e0d4ff;
 }
 
-.dash-card--lilac .card-icon {
-	color: #6449e8;
-}
 
 .dash-card--blush {
-	background: #ffe8f0;
-	border: 1px solid #ffd4e0;
+  background: #ffe8f0;
+
+  border: 1px solid #ffd4e0;
 }
 
-.dash-card--blush .card-icon {
-	color: #ff6ba6;
-}
 
 .dash-card--sky {
-	background: #d8f1ff;
-	border: 1px solid #b8e0ff;
+  background: #dff3ff;
+
+  border: 1px solid #bfe6ff;
 }
 
-.dash-card--sky .card-icon {
-	color: #0099ff;
-}
 
 .card-icon {
-	width: 48px;
-	height: 48px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 8px;
-	background: rgba(255, 255, 255, 0.5);
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 52px;
+  height: 52px;
+
+  border-radius: 16px;
+
+  background:
+    rgba(255, 255, 255, 0.65);
 }
+
+
+.dash-card--lilac .card-icon {
+  color: #6449e8;
+}
+
+
+.dash-card--blush .card-icon {
+  color: #ff5e9b;
+}
+
+
+.dash-card--sky .card-icon {
+  color: #008fe6;
+}
+
 
 .dash-card h3 {
-	font-size: 16px;
-	font-weight: 600;
-	color: #1a1a1a;
-	margin: 0;
+  margin: 0;
+
+  font-size: 19px;
+
+  font-weight: 800;
+
+  color: #1a1a1a;
 }
+
 
 .dash-card p {
-	font-size: 13px;
-	color: #666;
-	margin: 0;
-	line-height: 1.4;
-	flex: 1;
+  margin: 0;
+
+  max-width: 300px;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  color: #626b7a;
 }
+
 
 .card-arrow {
-	display: inline-flex;
-	align-items: center;
-	color: #ccc;
-	transition: all 0.2s ease;
+  display: flex;
+
+  align-items: center;
+
+  margin-top: auto;
+
+  color: #777;
+
+  transition:
+    transform 0.2s ease;
 }
+
 
 .dash-card:hover .card-arrow {
-	color: #999;
-	transform: translateX(4px);
+  transform: translateX(5px);
 }
 
-/* ===== GOALS SECTION ===== */
+
+/* =========================================================
+   GOALS
+   ========================================================= */
+
 .dash-goals {
-	background: #ffffff;
-	border-radius: 12px;
-	padding: 24px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+
+  padding: 26px;
+
+  border-radius: 20px;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.05);
 }
+
 
 .goals-title {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-bottom: 20px;
-	font-size: 16px;
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 22px;
+
+  font-size: 18px;
 }
+
 
 .goals-title strong {
-	font-weight: 600;
-	color: #1a1a1a;
+  color: #1a1a1a;
 }
+
 
 .goal-row {
-	display: grid;
-	grid-template-columns: 140px 1fr 140px;
-	gap: 12px;
-	align-items: center;
-	margin-bottom: 16px;
+  display: grid;
+
+  grid-template-columns:
+    180px 1fr 90px;
+
+  grid-template-areas:
+    "name bar progress";
+
+  align-items: center;
+
+  gap: 14px;
+
+  margin-bottom: 18px;
 }
+
 
 .goal-row:last-child {
-	margin-bottom: 0;
+  margin-bottom: 0;
 }
+
 
 .goal-row > span:first-child {
-	font-size: 14px;
-	color: #555;
-	font-weight: 500;
+  grid-area: name;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  color: #555;
 }
+
 
 .goal-progress {
-	font-size: 12px;
-	color: #999;
-	text-align: right;
+  grid-area: progress;
+
+  font-size: 12px;
+
+  text-align: right;
+
+  color: #888;
 }
+
 
 .goal-bar {
-	height: 6px;
-	background: #e8e8e8;
-	border-radius: 3px;
-	overflow: hidden;
-	grid-column: 2;
+  grid-area: bar;
+
+  height: 8px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #e8e8ee;
 }
+
 
 .goal-fill {
-	height: 100%;
-	background: linear-gradient(90deg, #ff9a44, #ff6ba6);
-	border-radius: 3px;
-	transition: width 0.3s ease;
+  height: 100%;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ff9a44,
+      #ff6ba6
+    );
+
+  transition:
+    width 0.3s ease;
 }
+
 
 .goal-fill--story {
-	background: linear-gradient(90deg, #4caf50, #66bb6a);
+  background:
+    linear-gradient(
+      90deg,
+      #4caf50,
+      #66bb6a
+    );
 }
+
 
 .goal-fill--song {
-	background: linear-gradient(90deg, #2196f3, #42a5f5);
+  background:
+    linear-gradient(
+      90deg,
+      #2196f3,
+      #42a5f5
+    );
 }
 
-/* ===== RESPONSIVE ===== */
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
 @media (max-width: 900px) {
-	.dashboard {
-		padding: 16px 16px;
-		gap: 16px;
-	}
 
-	.dash-hero {
-		grid-template-columns: 1fr;
-		padding: 32px 24px;
-		min-height: auto;
-	}
+  .dashboard {
+    padding: 16px;
+  }
 
-	.dash-cards {
-		grid-template-columns: repeat(2, 1fr);
-		gap: 12px;
-	}
 
-	.goal-row {
-		grid-template-columns: 1fr;
-		gap: 8px;
-	}
+  .dash-hero {
+    min-height: 350px;
 
-	.goal-bar {
-		grid-column: 1;
-	}
+    padding: 34px;
+  }
 
-	.goal-progress {
-		text-align: left;
-	}
+
+  .dash-hero h1 {
+    font-size: 36px;
+  }
+
+
+  .dash-cards {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+
+  .goal-row {
+    grid-template-columns:
+      150px 1fr 80px;
+  }
+
 }
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 600px) {
-	.dashboard {
-		padding: 12px 12px;
-		gap: 12px;
-	}
 
-	.dash-header {
-		padding: 12px;
-	}
+  .dashboard {
+    padding: 12px;
 
-	.dash-topbar {
-		margin-bottom: 12px;
-	}
+    gap: 14px;
+  }
 
-	.dash-avatar {
-		width: 40px;
-		height: 40px;
-	}
 
-	.dash-profile strong {
-		font-size: 14px;
-	}
+  .dash-header {
+    padding: 14px;
+  }
 
-	.dash-profile small {
-		font-size: 11px;
-	}
 
-	.dash-xp-bar {
-		flex-direction: column;
-		align-items: flex-start;
-	}
+  .dash-avatar {
+    width: 44px;
+    height: 44px;
+  }
 
-	.xp-text {
-		min-width: auto;
-		width: 100%;
-	}
 
-	.xp-progress {
-		width: 100%;
-	}
+  .dash-xp-bar {
+    flex-direction: column;
 
-	.dash-hero {
-		padding: 24px 16px;
-	}
+    align-items: stretch;
 
-	.dash-hero h1 {
-		font-size: 24px;
-	}
+    gap: 8px;
+  }
 
-	.dash-hero p {
-		font-size: 14px;
-	}
 
-	.dash-cards {
-		grid-template-columns: 1fr;
-	}
+  .xp-text {
+    width: 100%;
 
-	.dash-goals {
-		padding: 16px;
-	}
+    min-width: 0;
 
-	.goal-row {
-		gap: 6px;
-	}
+    justify-content: space-between;
+  }
+
+
+  .dash-hero {
+    min-height: 500px;
+
+    padding: 26px 20px;
+
+    align-items: flex-end;
+
+    background-position: center;
+  }
+
+
+  .hero-overlay {
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255,255,255,0.05) 0%,
+        rgba(255,255,255,0.55) 45%,
+        rgba(255,255,255,0.96) 75%
+      );
+  }
+
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+
+  .dash-hero h1 {
+    font-size: 29px;
+  }
+
+
+  .dash-hero p {
+    font-size: 14px;
+  }
+
+
+  .hero-button {
+    width: 100%;
+  }
+
+
+  .dash-cards {
+    grid-template-columns: 1fr;
+  }
+
+
+  .dash-card {
+    min-height: 175px;
+  }
+
+
+  .dash-goals {
+    padding: 20px;
+  }
+
+
+  .goal-row {
+    display: grid;
+
+    grid-template-columns: 1fr auto;
+
+    grid-template-areas:
+      "name progress"
+      "bar bar";
+
+    gap: 8px;
+
+    margin-bottom: 20px;
+  }
+
+
+  .goal-progress {
+    text-align: right;
+  }
+
 }

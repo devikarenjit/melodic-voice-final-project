@@ -11,6 +11,13 @@
   margin-bottom: 40px;
 }
 
+.settings-top-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .back-button {
   display: inline-flex;
   align-items: center;

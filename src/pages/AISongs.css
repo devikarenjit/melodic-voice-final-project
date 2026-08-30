@@ -1,282 +1,574 @@
+/* =========================================================
+   AI SONGS
+   ========================================================= */
+
 .ai-songs {
   width: 100%;
+
   max-width: 900px;
+
   margin: 0 auto;
+
   padding: 32px 24px 60px;
+
   box-sizing: border-box;
 }
 
-/* Header */
+
+/* =========================================================
+   HEADER
+   ========================================================= */
 
 .songs-header {
   text-align: center;
+
   margin-bottom: 28px;
 }
 
+
 .songs-music-icon {
   font-size: 42px;
+
   margin-bottom: 8px;
 }
 
+
 .songs-header h1 {
   margin: 0;
+
   font-size: 34px;
-  font-weight: 800;
+
+  font-weight: 900;
+
+  color: #1a1a1a;
 }
 
+
 .songs-header p {
-  margin: 10px 0 0;
+  max-width: 650px;
+
+  margin: 10px auto 0;
+
   font-size: 17px;
+
+  line-height: 1.5;
+
   color: #666;
 }
 
-/* Main personalized card */
+
+/* =========================================================
+   MAIN CARD
+   ========================================================= */
 
 .personalized-song-card {
-  background: #ffffff;
-  border-radius: 28px;
   padding: 36px;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+
+  border-radius: 28px;
+
+  background: #ffffff;
+
   text-align: center;
+
+  box-shadow:
+    0 10px 35px rgba(0,0,0,0.08);
 }
 
-/* Personalized badge */
+
+/* =========================================================
+   BADGE
+   ========================================================= */
 
 .song-badge {
   display: inline-block;
+
   padding: 9px 16px;
+
   border-radius: 999px;
+
   background: #f1eaff;
+
   color: #5635d8;
+
   font-size: 13px;
+
   font-weight: 800;
+
   letter-spacing: 0.4px;
 }
 
-/* Practice word */
+
+/* =========================================================
+   TITLE
+   ========================================================= */
 
 .personalized-song-card h2 {
   margin: 22px 0 8px;
-  font-size: 48px;
+
+  font-size: 42px;
+
+  line-height: 1.1;
+
   font-weight: 900;
+
   color: #4f35d4;
 }
 
+
 .song-description {
   margin: 0;
+
   font-size: 17px;
+
   color: #666;
 }
 
-/* Audio visual */
 
-.audio-visual {
-  margin: 30px auto 24px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 7px;
-  height: 70px;
+/* =========================================================
+   PRACTICE WORDS
+   ========================================================= */
+
+.practice-words-section {
+  margin: 26px auto 8px;
 }
 
+
+.practice-words-section h3 {
+  margin: 0 0 12px;
+
+  font-size: 18px;
+}
+
+
+.practice-word-list {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 9px;
+}
+
+
+.practice-word {
+  padding: 9px 13px;
+
+  border-radius: 999px;
+
+  background: #f6f3ff;
+
+  color: #4f35d4;
+
+  font-size: 14px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   AUDIO VISUAL
+   ========================================================= */
+
+.audio-visual {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  height: 70px;
+
+  margin: 28px auto 10px;
+}
+
+
 .audio-bar {
-  width: 9px;
-  height: 25px;
+  width: 10px;
+
+  height: 22px;
+
   border-radius: 10px;
+
   background: #6045e8;
 }
 
-.audio-visual.playing .audio-bar {
-  animation: soundWave 0.8s ease-in-out infinite alternate;
+
+.audio-visual.playing
+.audio-bar {
+  animation:
+    soundWave
+    0.7s
+    ease-in-out
+    infinite
+    alternate;
 }
+
 
 .audio-bar:nth-child(1) {
   animation-delay: 0s;
 }
 
+
 .audio-bar:nth-child(2) {
   animation-delay: 0.12s;
 }
+
 
 .audio-bar:nth-child(3) {
   animation-delay: 0.24s;
 }
 
+
 .audio-bar:nth-child(4) {
   animation-delay: 0.36s;
 }
+
 
 .audio-bar:nth-child(5) {
   animation-delay: 0.48s;
 }
 
+
 @keyframes soundWave {
+
   from {
-    height: 15px;
+    height: 14px;
   }
 
   to {
-    height: 65px;
+    height: 66px;
   }
+
 }
 
-/* Main audio button */
+
+.song-status {
+  margin-bottom: 18px;
+
+  color: #666;
+
+  font-size: 15px;
+}
+
+
+/* =========================================================
+   HEAR BUTTON
+   ========================================================= */
 
 .listen-button {
   width: 100%;
+
   max-width: 460px;
+
   min-height: 76px;
+
   border: none;
+
   border-radius: 22px;
+
   background: #5635d8;
+
   color: white;
+
   font-size: 22px;
+
   font-weight: 800;
+
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(86, 53, 216, 0.25);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  box-shadow:
+    0 8px 18px
+    rgba(86,53,216,0.25);
+
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
+
 
 .listen-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(86, 53, 216, 0.3);
+
+  box-shadow:
+    0 12px 24px
+    rgba(86,53,216,0.30);
 }
 
-.listen-button:active {
-  transform: translateY(1px);
-}
 
 .listen-button.playing {
   background: #3f2aa8;
 }
 
-/* Audio explanation */
+
+/* =========================================================
+   XP
+   ========================================================= */
 
 .xp-note {
   margin: 16px 0 26px;
+
   color: #666;
+
   font-size: 15px;
 }
 
-/* Sing section */
+
+/* =========================================================
+   SING
+   ========================================================= */
 
 .sing-section {
   margin-top: 30px;
+
   padding-top: 28px;
+
   border-top: 1px solid #eee;
 }
 
+
 .sing-section h3 {
   margin: 0 0 8px;
+
   font-size: 23px;
 }
 
+
 .sing-section p {
   margin: 0 0 18px;
+
   color: #666;
 }
 
-/* Sing button */
+
+/* =========================================================
+   SING BUTTON
+   ========================================================= */
 
 .sing-button {
   width: 100%;
+
   max-width: 460px;
+
   min-height: 70px;
+
   border: none;
+
   border-radius: 20px;
+
   background: #ff7b45;
+
   color: white;
+
   font-size: 21px;
+
   font-weight: 800;
+
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
 }
+
 
 .sing-button:hover:not(:disabled) {
   transform: translateY(-2px);
 }
 
+
 .sing-button:disabled {
   cursor: not-allowed;
+
   opacity: 0.45;
 }
 
+
 .sing-button.completed {
   background: #39a852;
+
   opacity: 1;
 }
 
-/* Parent lyrics */
+
+/* =========================================================
+   PARENT LYRICS
+   ========================================================= */
 
 .parent-lyrics {
   margin-top: 34px;
+
   padding: 22px;
+
   border-radius: 18px;
+
   background: #f8f8fc;
+
   text-align: left;
 }
 
+
 .parent-lyrics summary {
   cursor: pointer;
+
   font-weight: 700;
+
   color: #555;
 }
 
+
 .lyrics-box {
   margin-top: 18px;
+
   padding: 18px;
+
   border-radius: 16px;
+
   background: white;
 }
+
 
 .lyrics-box h3 {
   margin-top: 0;
 }
 
+
 .lyrics-box p {
   margin: 9px 0;
+
   color: #555;
 }
 
-/* Messages */
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
 
 .listen-first-message {
-  margin-top: 14px;
-  color: #777;
+  margin-top: 14px !important;
+
+  color: #777 !important;
+
   font-size: 14px;
 }
 
+
 .success-message {
-  margin-top: 16px;
-  color: #319447;
+  margin-top: 16px !important;
+
+  color: #319447 !important;
+
   font-weight: 700;
 }
 
-/* Mobile */
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 600px) {
+
   .ai-songs {
     padding: 24px 16px 40px;
   }
 
+
   .personalized-song-card {
     padding: 25px 18px;
+
     border-radius: 22px;
   }
+
 
   .songs-header h1 {
     font-size: 28px;
   }
 
+
   .personalized-song-card h2 {
-    font-size: 40px;
+    font-size: 34px;
   }
+
 
   .listen-button {
     font-size: 19px;
   }
 
+
   .sing-button {
     font-size: 18px;
+  }
+
+}
+
+/* =========================================================
+   SING WITH ME - MICROPHONE RECORDING
+   ========================================================= */
+
+.sing-button.recording {
+  background: #d94b4b;
+  animation: recordingPulse 1.2s ease-in-out infinite;
+}
+
+.recording-message {
+  margin-top: 14px !important;
+  color: #d94b4b !important;
+  font-weight: 800;
+  line-height: 1.6;
+}
+
+.recording-error {
+  margin-top: 14px !important;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fff0f0;
+  color: #c03939 !important;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.practice-words {
+  margin-top: 22px;
+}
+
+.practice-words-title {
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: #555;
+}
+
+.practice-word-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.practice-word {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: #f1eaff;
+  color: #5635d8;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+@keyframes recordingPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.03);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }

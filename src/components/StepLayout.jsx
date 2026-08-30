@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import ProgressBar from "./ProgressBar";
 import ChildProfile from "../pages/onboarding/ChildProfile";
 import SpeechInfo from "../pages/onboarding/SpeechInfo";
@@ -25,7 +26,8 @@ export default function StepLayout() {
         return (
           data.guardianName?.trim() &&
           data.relationship &&
-          data.email?.trim()
+          data.email?.trim() &&
+          data.profileArt?.trim()
         );
 
       case 4:

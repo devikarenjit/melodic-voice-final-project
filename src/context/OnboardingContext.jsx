@@ -25,6 +25,7 @@ const DEFAULT_DATA = {
   guardianName: "",
   relationship: "",
   email: "",
+  profileArt: "🌈",
 
   // Privacy & Consent
   consentRecording: false,

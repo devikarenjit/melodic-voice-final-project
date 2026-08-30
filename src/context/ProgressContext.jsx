@@ -1,50 +1,67 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 const ProgressContext = createContext();
 
+const DEFAULT_PROGRESS = {
+  xp: 0,
+  streak: 1,
+  started: false,
+
+  dailyGoals: {
+    practiceMinutes: {
+      current: 0,
+      target: 15,
+    },
+
+    listenStory: {
+      current: 0,
+      target: 1,
+    },
+
+    singSong: {
+      current: 0,
+      target: 1,
+    },
+  },
+
+  reminderTime: "17:00",
+  lastPracticeDate: null,
+};
+
 export function ProgressProvider({ children }) {
   const [progress, setProgress] = useState(() => {
-    const saved = localStorage.getItem("melodic-progress");
+    const saved = localStorage.getItem(
+      "melodic-progress"
+    );
 
     if (saved) {
       try {
-        return JSON.parse(saved);
+        return {
+          ...DEFAULT_PROGRESS,
+          ...JSON.parse(saved),
+        };
       } catch {
-        // If saved data is corrupted, use the default progress.
+        return DEFAULT_PROGRESS;
       }
     }
 
-    return {
-      xp: 0,
-      streak: 1,
-      started: false,
-
-      dailyGoals: {
-        practiceMinutes: {
-          current: 0,
-          target: 15,
-        },
-        listenStory: {
-          current: 0,
-          target: 1,
-        },
-        singSong: {
-          current: 0,
-          target: 1,
-        },
-      },
-
-      reminderTime: "17:00",
-      lastPracticeDate: null,
-    };
+    return DEFAULT_PROGRESS;
   });
 
-  // Save progress whenever it changes
+  /* Save progress */
   useEffect(() => {
-    localStorage.setItem("melodic-progress", JSON.stringify(progress));
+    localStorage.setItem(
+      "melodic-progress",
+      JSON.stringify(progress)
+    );
   }, [progress]);
 
-  // Request notification permission
+  /* Notification permission */
   useEffect(() => {
     if (
       "Notification" in window &&
@@ -54,15 +71,16 @@ export function ProgressProvider({ children }) {
     }
   }, []);
 
-  // Reminder notification
+  /* Reminder */
   useEffect(() => {
     const timer = setInterval(() => {
       const now = new Date();
 
-      const currentTime = `${String(now.getHours()).padStart(
-        2,
-        "0"
-      )}:${String(now.getMinutes()).padStart(2, "0")}`;
+      const currentTime = `${String(
+        now.getHours()
+      ).padStart(2, "0")}:${String(
+        now.getMinutes()
+      ).padStart(2, "0")}`;
 
       const today = now.toISOString().split("T")[0];
 
@@ -76,34 +94,43 @@ export function ProgressProvider({ children }) {
         Notification.permission === "granted"
       ) {
         new Notification("Melodic Voice Reminder", {
-          body: "Time to practice! Open the app and complete your goals.",
+          body:
+            "Time to practice! Open Melodic Voice and complete your goals.",
           icon: "/favicon.ico",
         });
       }
     }, 60000);
 
     return () => clearInterval(timer);
-  }, [progress.reminderTime, progress.lastPracticeDate]);
+  }, [
+    progress.reminderTime,
+    progress.lastPracticeDate,
+  ]);
 
-  // Reset daily goals when a new day starts
+  /* Daily reset */
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date()
+      .toISOString()
+      .split("T")[0];
 
     if (
       progress.lastPracticeDate &&
       progress.lastPracticeDate !== today
     ) {
-      setProgress((prev) => ({
-        ...prev,
+      setProgress((previous) => ({
+        ...previous,
+
         dailyGoals: {
           practiceMinutes: {
             current: 0,
             target: 15,
           },
+
           listenStory: {
             current: 0,
             target: 1,
           },
+
           singSong: {
             current: 0,
             target: 1,
@@ -113,123 +140,198 @@ export function ProgressProvider({ children }) {
     }
   }, [progress.lastPracticeDate]);
 
-  // Calculate level from XP
-  const level = Math.floor(progress.xp / 500) + 1;
+  const level =
+    Math.floor(progress.xp / 500) + 1;
 
-  // Listen to a story
+  /* ---------------- STORIES ---------------- */
+
   const listenToStory = () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date()
+      .toISOString()
+      .split("T")[0];
 
-    setProgress((prev) => {
-      const newGoals = {
-        ...prev.dailyGoals,
-        listenStory: {
-          ...prev.dailyGoals.listenStory,
-        },
+    setProgress((previous) => {
+      const listenGoal = {
+        ...previous.dailyGoals.listenStory,
       };
 
       if (
-        newGoals.listenStory.current <
-        newGoals.listenStory.target
+        listenGoal.current <
+        listenGoal.target
       ) {
-        newGoals.listenStory.current += 1;
+        listenGoal.current += 1;
       }
 
       return {
-        ...prev,
-        xp: prev.xp + 20,
+        ...previous,
+
+        xp: previous.xp + 20,
+
         started: true,
+
         lastPracticeDate: today,
-        dailyGoals: newGoals,
+
+        dailyGoals: {
+          ...previous.dailyGoals,
+
+          listenStory: listenGoal,
+        },
       };
     });
   };
 
-  // Listen to an AI song
-  // Listening earns +10 XP but does NOT complete the singing goal.
-  const listenToSong = () => {
-    const today = new Date().toISOString().split("T")[0];
+  /* ---------------- AI SONGS ---------------- */
 
-    setProgress((prev) => ({
-      ...prev,
-      xp: prev.xp + 10,
+  const listenToSong = () => {
+    const today = new Date()
+      .toISOString()
+      .split("T")[0];
+
+    setProgress((previous) => ({
+      ...previous,
+
+      xp: previous.xp + 10,
+
       started: true,
+
       lastPracticeDate: today,
     }));
   };
 
-  // Sing an AI song
-  // Singing earns +20 XP and completes the daily singing goal.
   const singSong = () => {
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date()
+      .toISOString()
+      .split("T")[0];
 
-    setProgress((prev) => {
-      const newGoals = {
-        ...prev.dailyGoals,
-        singSong: {
-          ...prev.dailyGoals.singSong,
-        },
+    setProgress((previous) => {
+      const singGoal = {
+        ...previous.dailyGoals.singSong,
       };
 
       if (
-        newGoals.singSong.current <
-        newGoals.singSong.target
+        singGoal.current <
+        singGoal.target
       ) {
-        newGoals.singSong.current += 1;
+        singGoal.current += 1;
       }
 
       return {
-        ...prev,
-        xp: prev.xp + 20,
+        ...previous,
+
+        xp: previous.xp + 20,
+
         started: true,
+
         lastPracticeDate: today,
-        dailyGoals: newGoals,
+
+        dailyGoals: {
+          ...previous.dailyGoals,
+
+          singSong: singGoal,
+        },
       };
     });
   };
 
-  // Practice words
-  const practiceWords = (minutes) => {
-    const today = new Date().toISOString().split("T")[0];
+  /* ---------------- PRACTICE MINUTES ---------------- */
 
-    setProgress((prev) => {
-      const newGoals = {
-        ...prev.dailyGoals,
-        practiceMinutes: {
-          ...prev.dailyGoals.practiceMinutes,
-        },
+  const practiceWords = (minutes) => {
+    const today = new Date()
+      .toISOString()
+      .split("T")[0];
+
+    setProgress((previous) => {
+      const practiceGoal = {
+        ...previous.dailyGoals.practiceMinutes,
       };
 
       const remaining =
-        newGoals.practiceMinutes.target -
-        newGoals.practiceMinutes.current;
+        practiceGoal.target -
+        practiceGoal.current;
 
-      const toAdd = Math.min(minutes, remaining);
+      const toAdd = Math.min(
+        minutes,
+        remaining
+      );
 
-      newGoals.practiceMinutes.current += toAdd;
+      practiceGoal.current += toAdd;
 
       return {
-        ...prev,
-        xp: prev.xp + minutes * 2,
+        ...previous,
+
+        xp: previous.xp + minutes * 2,
+
         started: true,
+
         lastPracticeDate: today,
-        dailyGoals: newGoals,
+
+        dailyGoals: {
+          ...previous.dailyGoals,
+
+          practiceMinutes: practiceGoal,
+        },
       };
     });
   };
 
-  // Start the child's learning journey
+  /* ---------------- NEW SPEECH XP ---------------- */
+
+  /*
+   * Child hears an AI-generated practice word.
+   *
+   * +10 XP
+   */
+  const hearPracticeWord = () => {
+    const today = new Date()
+      .toISOString()
+      .split("T")[0];
+
+    setProgress((previous) => ({
+      ...previous,
+
+      xp: previous.xp + 10,
+
+      started: true,
+
+      lastPracticeDate: today,
+    }));
+  };
+
+  /*
+   * Child says the difficult word correctly.
+   *
+   * +15 XP
+   */
+  const practiceSpeechWord = () => {
+    const today = new Date()
+      .toISOString()
+      .split("T")[0];
+
+    setProgress((previous) => ({
+      ...previous,
+
+      xp: previous.xp + 15,
+
+      started: true,
+
+      lastPracticeDate: today,
+    }));
+  };
+
+  /* ---------------- JOURNEY ---------------- */
+
   const startJourney = () => {
-    setProgress((prev) => ({
-      ...prev,
+    setProgress((previous) => ({
+      ...previous,
       started: true,
     }));
   };
 
-  // Change reminder time
+  /* ---------------- REMINDER ---------------- */
+
   const setReminderTime = (time) => {
-    setProgress((prev) => ({
-      ...prev,
+    setProgress((previous) => ({
+      ...previous,
       reminderTime: time,
     }));
   };
@@ -238,12 +340,23 @@ export function ProgressProvider({ children }) {
     <ProgressContext.Provider
       value={{
         ...progress,
+
         level,
+
         listenToStory,
+
         listenToSong,
+
         singSong,
+
         practiceWords,
+
+        hearPracticeWord,
+
+        practiceSpeechWord,
+
         startJourney,
+
         setReminderTime,
       }}
     >
@@ -253,13 +366,15 @@ export function ProgressProvider({ children }) {
 }
 
 export function useProgress() {
-  const ctx = useContext(ProgressContext);
+  const context = useContext(
+    ProgressContext
+  );
 
-  if (!ctx) {
+  if (!context) {
     throw new Error(
       "useProgress must be used inside ProgressProvider"
     );
   }
 
-  return ctx;
+  return context;
 }
