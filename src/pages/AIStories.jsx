@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useOnboarding } from "../context/OnboardingContext";
 import { useProgress } from "../context/ProgressContext";
@@ -13,7 +13,7 @@ const FALLBACK_STORIES = [
     description:
       "A curious rabbit follows a rainbow through a magical forest.",
     content:
-      "A little rabbit ran through the bright forest. The rabbit saw a rainbow over the river. It raced past a red rocket and roared with joy when it reached the rainbow.",
+      "A little rabbit ran through a bright forest. The rabbit saw a rainbow over the river. It raced past a red rocket and smiled when it reached the rainbow.",
   },
   {
     id: 2,
@@ -21,9 +21,9 @@ const FALLBACK_STORIES = [
     theme: "Space Adventure",
     icon: "🚀",
     description:
-      "A brave little explorer takes a rocket ride across the stars.",
+      "A brave explorer takes a rocket ride across the stars.",
     content:
-      "A brave explorer climbed into a rocket. The rocket raced around the red moon and flew past a sparkling star. The explorer laughed and shouted as the rocket returned home.",
+      "A brave explorer climbed into a rocket. The rocket raced around a red moon and flew past a sparkling star. The explorer laughed as the rocket returned home.",
   },
   {
     id: 3,
@@ -33,75 +33,349 @@ const FALLBACK_STORIES = [
     description:
       "A magical river leads to a rainbow hidden behind the hills.",
     content:
-      "A little river ran between green hills. A rabbit followed the river and heard a gentle roar. At the end of the path, a beautiful rainbow appeared in the sky.",
+      "A little river ran between green hills. A rabbit followed the river and heard a gentle roar. At the end of the path, a beautiful rainbow appeared.",
   },
 ];
 
 function normalize(text) {
-  return text
+  return String(text || "")
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s]/gu, "")
     .trim();
 }
 
-function containsTargetSound(word, target) {
-  if (!target) return true;
-
-  const cleanWord = normalize(word);
-  const cleanTarget = normalize(target);
-
-  if (!cleanTarget) return true;
-
-  return cleanWord.includes(cleanTarget);
-}
-
 function getTargetLabel(target) {
-  if (!target) return "your special sound";
+  if (!target) {
+    return "your speech sound";
+  }
 
   return `"${target}"`;
 }
 
-function extractJsonPayload(rawText) {
-  const cleaned = String(rawText || "")
-    .replace(/event:\s*.*\n/g, "")
-    .replace(/data:\s*/g, "")
+function extractDifficultyTokens(value) {
+  const raw = String(value || "")
+    .toLowerCase()
+    .replace(/&/g, " ")
+    .replace(/,/g, " ")
+    .replace(/\+/g, " ")
+    .replace(/\band\b/g, " ")
+    .replace(/[^a-z0-9\s]/g, " ")
     .trim();
 
-  if (!cleaned) return "";
+  if (!raw) {
+    return [];
+  }
 
-  const textMatches = [
-    ...cleaned.matchAll(/"text"\s*:\s*"((?:\\.|[^"\\])*)"/g),
+  return [
+    ...new Set(
+      raw
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((token) => token.trim())
+        .filter((token) => token.length > 0)
+    ),
+  ];
+}
+
+function buildFallbackPracticeWords(difficulty) {
+  const baseWords = {
+    x: ["fox", "box", "six", "mix", "taxi"],
+    m: ["moon", "monkey", "mouse", "music", "milk"],
+    r: ["rabbit", "rocket", "rainbow", "river", "roar"],
+    s: ["sun", "snake", "star", "sock", "smile"],
+    l: ["lion", "leaf", "little", "lamp", "love"],
+    sh: ["ship", "shell", "shine", "shark", "shoe"],
+    ch: ["chair", "cheese", "chicken", "cherry", "cheese"],
+    th: ["three", "thumb", "think", "this", "thunder"],
+    k: ["kite", "king", "cake", "cookie", "kangaroo"],
+    g: ["garden", "goat", "gift", "giraffe", "green"],
+    f: ["fish", "fox", "flower", "frog", "fun"],
+    b: ["ball", "baby", "banana", "boat", "book"],
+    p: ["pig", "pizza", "panda", "puppy", "play"],
+  };
+
+  const tokens = extractDifficultyTokens(difficulty);
+
+  const selected = [];
+
+  for (const token of tokens) {
+    const words = baseWords[token] || [];
+
+    words.forEach((word) => {
+      if (!selected.includes(word)) {
+        selected.push(word);
+      }
+    });
+  }
+
+  if (selected.length >= 8) {
+    return selected.slice(0, 8);
+  }
+
+  for (const words of Object.values(baseWords)) {
+    words.forEach((word) => {
+      if (!selected.includes(word)) {
+        selected.push(word);
+      }
+    });
+
+    if (selected.length >= 8) {
+      return selected.slice(0, 8);
+    }
+  }
+
+  return [
+    "fox",
+    "box",
+    "moon",
+    "music",
+    "rabbit",
+    "rocket",
+    "sun",
+    "star",
+  ];
+}
+
+function buildFallbackStories({ childName, difficulty, theme, language }) {
+  const practiceWords = buildFallbackPracticeWords(difficulty);
+  const safeTheme = theme || "Adventure";
+  const safeName = childName || "friend";
+  const safeLanguage = language || "English";
+
+  const storySeeds = [
+    {
+      title: `${safeName}'s Rainbow Trail`,
+      icon: "🌈",
+      description: `A bright adventure full of ${practiceWords[0]} and ${practiceWords[1]} energy.`,
+      content: `One morning, ${safeName} woke up to a glowing sky and a little ${practiceWords[0]} bouncing in the grass. The trail sparkled with ${practiceWords[2]} and tiny ${practiceWords[3]} sounds. ${safeName} followed the path through a dreamy garden, laughed at a bouncing ${practiceWords[4]}, and reached a warm hill where the rainbow danced in the air. The world felt magical, and ${safeName} smiled while singing, ${practiceWords[5]} and ${practiceWords[6]} together.`,
+    },
+    {
+      title: "The Moonbeam Rocket",
+      icon: "🚀",
+      description: `A playful space journey filled with ${practiceWords[2]} and ${practiceWords[7]} wonder.`,
+      content: `A brave little explorer named ${safeName} climbed into a shiny rocket and whispered, “Let’s zoom into the sky!” The rocket floated past a giant ${practiceWords[4]} and a moon bright as a ${practiceWords[6]}. ${safeName} laughed as the stars twinkled like tiny ${practiceWords[1]} lights. Soon the rocket drifted over a silver cloud, and the crew sang a happy tune with ${practiceWords[3]} and ${practiceWords[5]} in the air.`,
+    },
+    {
+      title: "The Storybook Garden",
+      icon: "🌼",
+      description: `A cozy garden adventure where ${practiceWords[0]} and ${practiceWords[7]} help ${safeName} find joy.`,
+      content: `In a secret garden, ${safeName} heard a soft rustle near the flowers. A tiny ${practiceWords[0]} peeped out from a bush, and a cheerful ${practiceWords[2]} hopped across the path. The garden was full of bright leaves, dancing bees, and smiling stones. ${safeName} followed the path until a little door appeared. Behind it was a cozy reading nook with ${practiceWords[5]} stories, ${practiceWords[4]} laughter, and the sweetest ${practiceWords[6]} breeze.`,
+    },
   ];
 
-  const textPayload = textMatches
-    .map((match) => {
-      try {
-        return JSON.parse(`"${match[1]}"`);
-      } catch {
-        return match[1];
-      }
-    })
-    .join("");
+  return {
+    practiceWords,
+    stories: storySeeds.map((story, index) => ({
+      id: Date.now() + index,
+      title: story.title,
+      theme: safeTheme,
+      icon: story.icon,
+      description: story.description,
+      content: story.content,
+    })),
+    language: safeLanguage,
+  };
+}
 
-  if (textPayload) {
-    const start = textPayload.indexOf("[");
-    const end = textPayload.lastIndexOf("]");
+/*
+ * Extract the text returned by the Gemini streaming endpoint.
+ */
+function extractAIText(rawText) {
+  const text = String(rawText || "");
 
-    if (start !== -1 && end > start) {
-      return textPayload.slice(start, end + 1);
+  const matches = [
+    ...text.matchAll(
+      /"text"\s*:\s*"((?:\\.|[^"\\])*)"/g
+    ),
+  ];
+
+  if (matches.length > 0) {
+    return matches
+      .map((match) => {
+        try {
+          return JSON.parse(`"${match[1]}"`);
+        } catch {
+          return match[1];
+        }
+      })
+      .join("");
+  }
+
+  return text;
+}
+
+/*
+ * Find JSON inside the AI response.
+ */
+function parseAIJson(rawText) {
+  const aiText = extractAIText(rawText)
+    .replace(/```json/gi, "")
+    .replace(/```/g, "")
+    .trim();
+
+  const arrayStart = aiText.indexOf("[");
+  const arrayEnd = aiText.lastIndexOf("]");
+
+  if (
+    arrayStart !== -1 &&
+    arrayEnd !== -1 &&
+    arrayEnd > arrayStart
+  ) {
+    return JSON.parse(
+      aiText.slice(arrayStart, arrayEnd + 1)
+    );
+  }
+
+  const objectStart = aiText.indexOf("{");
+  const objectEnd = aiText.lastIndexOf("}");
+
+  if (
+    objectStart !== -1 &&
+    objectEnd !== -1 &&
+    objectEnd > objectStart
+  ) {
+    return JSON.parse(
+      aiText.slice(objectStart, objectEnd + 1)
+    );
+  }
+
+  throw new Error("No JSON returned by AI");
+}
+
+/*
+ * Send one request to the AI.
+ *
+ * The AI generates:
+ *  - practice words
+ *  - three stories
+ *
+ * This guarantees that the practice words are actually
+ * used inside the stories.
+ */
+async function requestAIStories({
+  childName,
+  difficulty,
+  theme,
+  language,
+}) {
+  const response = await fetch(
+    "http://localhost:3001/chat",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            content: `
+Create a personalized speech-practice activity for a child.
+
+Child name: ${childName}
+Speech target: ${difficulty}
+Preferred story theme: ${theme}
+Language: ${language}
+
+FIRST create exactly 8 child-friendly practice words.
+
+The practice words MUST:
+- directly relate to the child's speech target
+- contain the target sound, letter, or pattern
+- be appropriate for the child's age
+- be familiar and understandable to a young child
+- NOT be the target letter by itself
+- NOT be a generic pre-made word bank
+
+Then create exactly 3 genuinely different short children's stories.
+
+VERY IMPORTANT:
+- The 8 practice words must appear naturally in ALL THREE stories.
+- Do not create three copies of the same story.
+- Each story must have a different plot and setting.
+- Each title must describe the actual story.
+- Titles must be different from each other.
+- Use simple, playful language.
+- Repeat the practice words naturally.
+- Do not mention "speech therapy" inside the children's story.
+- Do not make the story about pronunciation.
+- The story should simply be fun while naturally containing the practice words.
+
+Return ONLY valid JSON.
+
+Use exactly this structure:
+
+{
+  "practiceWords": [
+    "word1",
+    "word2",
+    "word3",
+    "word4",
+    "word5",
+    "word6",
+    "word7",
+    "word8"
+  ],
+  "stories": [
+    {
+      "title": "Unique title",
+      "theme": "Adventure",
+      "icon": "🐰",
+      "description": "One short sentence.",
+      "content": "The complete short story."
+    },
+    {
+      "title": "Different title",
+      "theme": "Adventure",
+      "icon": "🚀",
+      "description": "One short sentence.",
+      "content": "A completely different story."
+    },
+    {
+      "title": "Another different title",
+      "theme": "Adventure",
+      "icon": "🌈",
+      "description": "One short sentence.",
+      "content": "Another completely different story."
+    }
+  ]
+}
+            `,
+          },
+        ],
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `AI server returned ${response.status}`
+    );
+  }
+
+  const reader = response.body?.getReader();
+
+  if (!reader) {
+    throw new Error("AI response stream unavailable");
+  }
+
+  const decoder = new TextDecoder();
+  let rawText = "";
+
+  while (true) {
+    const { done, value } =
+      await reader.read();
+
+    if (done) {
+      break;
     }
 
-    return textPayload;
+    rawText += decoder.decode(value, {
+      stream: true,
+    });
   }
 
-  const start = cleaned.indexOf("[");
-  const end = cleaned.lastIndexOf("]");
-
-  if (start !== -1 && end > start) {
-    return cleaned.slice(start, end + 1);
-  }
-
-  return cleaned;
+  return parseAIJson(rawText);
 }
 
 export default function AIStories() {
@@ -119,248 +393,165 @@ export default function AIStories() {
     data?.childName?.trim() ||
     "You";
 
-  const age = data?.age || data?.childAge || "your age";
-
   const difficulty =
     data?.difficultWords?.trim() ||
+    data?.difficultSounds?.join(", ") ||
     data?.speechSound?.trim() ||
     data?.practiceSound?.trim() ||
-    "r";
+    "x and m";
 
-  const theme = data?.storyTheme || "Adventure";
+  const theme =
+    data?.storyTheme ||
+    data?.theme ||
+    "Adventure";
 
-  const [stories, setStories] = useState(FALLBACK_STORIES);
-  const [selectedStory, setSelectedStory] = useState(null);
-  const [heardStories, setHeardStories] = useState({});
-  const [playingStory, setPlayingStory] = useState(null);
-  const [practiceWords, setPracticeWords] = useState([]);
-  const [selectedWord, setSelectedWord] = useState(null);
-  const [heardWords, setHeardWords] = useState({});
-  const [correctWords, setCorrectWords] = useState({});
-  const [isListening, setIsListening] = useState(false);
-  const [message, setMessage] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
+  const language =
+    data?.primaryLanguage ||
+    "English";
 
-  /*
-   * Generate the practice words through the AI server.
-   * There is intentionally NO hard-coded word bank here.
-   */
-  const generatePracticeWords = async () => {
-    try {
-      const response = await fetch("http://localhost:3001/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: `
-Create 8 child-friendly speech practice words.
+  const [stories, setStories] =
+    useState(FALLBACK_STORIES);
 
-Child age: ${age}
-Difficult sound, letter, or speech target: ${difficulty}
-Language: ${data?.primaryLanguage || "English"}
+  const [practiceWords, setPracticeWords] =
+    useState([]);
 
-Rules:
-- Every word must genuinely contain the difficult target.
-- Use words appropriate for the child's age.
-- Prefer concrete, familiar words a young child can understand.
-- Do not simply repeat the target letter by itself.
-- Do not return a word bank from memory.
-- Generate the words specifically for this child.
-- Return ONLY a JSON array of 8 strings.
-Example format:
-["rabbit","rainbow","rocket","river","roar","rain","robot","red"]
-              `,
-            },
-          ],
-        }),
-      });
+  const [heardStories, setHeardStories] =
+    useState({});
 
-      if (!response.ok) {
-        throw new Error("AI request failed");
-      }
+  const [playingStory, setPlayingStory] =
+    useState(null);
 
-      const reader = response.body?.getReader();
+  const [selectedStory, setSelectedStory] =
+    useState(null);
 
-      if (!reader) {
-        throw new Error("No AI response stream");
-      }
+  const [selectedWord, setSelectedWord] =
+    useState(null);
 
-      const decoder = new TextDecoder();
-      let rawText = "";
+  const [heardWords, setHeardWords] =
+    useState({});
 
-      while (true) {
-        const { done, value } = await reader.read();
+  const [correctWords, setCorrectWords] =
+    useState({});
 
-        if (done) break;
+  const [isListening, setIsListening] =
+    useState(false);
 
-        rawText += decoder.decode(value, {
-          stream: true,
-        });
-      }
+  const [isGenerating, setIsGenerating] =
+    useState(false);
 
-      /*
-       * Gemini SSE can contain multiple data chunks.
-       * Extract text fields as safely as possible.
-       */
-      const generatedText = extractJsonPayload(rawText);
+  const [message, setMessage] =
+    useState("");
 
-      if (!generatedText || !generatedText.includes("[")) {
-        throw new Error("AI did not return a word list");
-      }
-
-      const parsed = JSON.parse(generatedText);
-
-      const validWords = parsed
-        .filter(
-          (word) =>
-            typeof word === "string" &&
-            word.trim().length > 1 &&
-            containsTargetSound(word, difficulty)
-        )
-        .map((word) => word.trim().toLowerCase())
-        .filter(
-          (word, index, array) =>
-            array.indexOf(word) === index
-        )
-        .slice(0, 8);
-
-      if (validWords.length >= 5) {
-        setPracticeWords(validWords);
-      }
-    } catch (error) {
-      console.error("AI practice-word generation failed:", error);
-
-      /*
-       * We deliberately do NOT insert a hard-coded word bank.
-       * If AI is unavailable, show a helpful message instead.
-       */
-      setPracticeWords([]);
-      setMessage(
-        "Your AI practice words could not be generated right now. Make sure the AI server is running."
-      );
-    }
-  };
+  const [showPractice, setShowPractice] =
+    useState(false);
 
   /*
-   * Generate different stories through AI.
+   * Generate both stories AND their practice words.
    */
-  const generateStories = async () => {
+  const generateNewStories = async () => {
     setIsGenerating(true);
     setMessage("");
+    setShowPractice(false);
 
     try {
-      const response = await fetch("http://localhost:3001/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: `
-Create exactly 3 genuinely different children's stories.
-
-Child name: ${childName}
-Child age: ${age}
-Speech target: ${difficulty}
-Preferred theme: ${theme}
-
-Important:
-- Each story must have a completely different plot.
-- Do NOT create the same story with different titles.
-- Use simple language appropriate for the child's age.
-- Naturally include words containing the speech target.
-- Do not make the speech target itself the only practice.
-- Each story should be short enough for a child to listen to.
-- Give each story a unique title related to its actual content.
-
-Return ONLY valid JSON in this format:
-
-[
-  {
-    "title": "Unique title",
-    "theme": "Theme",
-    "icon": "emoji",
-    "description": "One sentence description",
-    "content": "Short story"
-  },
-  {
-    "title": "Different unique title",
-    "theme": "Theme",
-    "icon": "emoji",
-    "description": "One sentence description",
-    "content": "Different short story"
-  },
-  {
-    "title": "Another unique title",
-    "theme": "Theme",
-    "icon": "emoji",
-    "description": "One sentence description",
-    "content": "Another different short story"
-  }
-]
-              `,
-            },
-          ],
-        }),
+      const result = await requestAIStories({
+        childName,
+        difficulty,
+        theme,
+        language,
       });
 
-      if (!response.ok) {
-        throw new Error("Story generation failed");
-      }
-
-      const reader = response.body?.getReader();
-
-      if (!reader) {
-        throw new Error("No story stream");
-      }
-
-      const decoder = new TextDecoder();
-      let rawText = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-
-        if (done) break;
-
-        rawText += decoder.decode(value, {
-          stream: true,
-        });
-      }
-
-      const generatedText = extractJsonPayload(rawText);
-
-      if (!generatedText || !generatedText.includes("[")) {
-        throw new Error("AI did not return stories");
-      }
-
-      const parsedStories = JSON.parse(generatedText);
-
       if (
-        Array.isArray(parsedStories) &&
-        parsedStories.length >= 3
+        !result ||
+        !Array.isArray(result.stories) ||
+        result.stories.length < 3
       ) {
-        setStories(
-          parsedStories.slice(0, 3).map((story, index) => ({
-            id: index + 1,
-            title: story.title,
-            theme: story.theme || theme,
-            icon: story.icon || ["🐰", "🚀", "🌈"][index],
-            description: story.description,
-            content: story.content,
-          }))
+        throw new Error(
+          "AI did not return three stories"
         );
       }
-    } catch (error) {
-      console.error("AI story generation failed:", error);
+
+      if (
+        !Array.isArray(result.practiceWords) ||
+        result.practiceWords.length < 5
+      ) {
+        throw new Error(
+          "AI did not return enough practice words"
+        );
+      }
+
+      const cleanedWords =
+        result.practiceWords
+          .filter(
+            (word) =>
+              typeof word === "string" &&
+              word.trim().length > 1
+          )
+          .map((word) =>
+            word.trim().toLowerCase()
+          )
+          .filter(
+            (word, index, array) =>
+              array.indexOf(word) === index
+          )
+          .slice(0, 8);
+
+      if (cleanedWords.length < 5) {
+        throw new Error(
+          "Not enough valid AI practice words"
+        );
+      }
+
+      const cleanedStories =
+        result.stories
+          .slice(0, 3)
+          .map((story, index) => ({
+            id: Date.now() + index,
+            title:
+              story.title ||
+              `A New Adventure ${index + 1}`,
+            theme:
+              story.theme || theme,
+            icon:
+              story.icon ||
+              ["🐰", "🚀", "🌈"][index],
+            description:
+              story.description ||
+              "A new adventure made especially for you.",
+            content:
+              story.content || "",
+          }));
+
+      setPracticeWords(cleanedWords);
+      setStories(cleanedStories);
+
+      setHeardStories({});
+      setHeardWords({});
+      setCorrectWords({});
+      setSelectedStory(null);
+      setSelectedWord(null);
+      setPlayingStory(null);
 
       setMessage(
-        "The AI could not create new stories right now. Showing the saved stories instead."
+        "✨ Your new stories are ready! Listen to a story first."
+      );
+    } catch (error) {
+      console.error(
+        "AI story generation failed:",
+        error
+      );
+
+      const fallback = buildFallbackStories({
+        childName,
+        difficulty,
+        theme,
+        language,
+      });
+
+      setPracticeWords(fallback.practiceWords);
+      setStories(fallback.stories);
+      setMessage(
+        "✨ Personalized stories were created from your child's speech target while the AI service reconnects."
       );
     } finally {
       setIsGenerating(false);
@@ -368,36 +559,43 @@ Return ONLY valid JSON in this format:
   };
 
   useEffect(() => {
-    generateStories();
-    generatePracticeWords();
+    generateNewStories();
+
+    // Generate once when this page opens.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const targetWords = useMemo(
-    () =>
-      practiceWords.filter((word) =>
-        containsTargetSound(word, difficulty)
-      ),
-    [practiceWords, difficulty]
-  );
-
   /*
-   * Speak a story using the browser's speech synthesis.
+   * Hear a complete story.
    */
   const hearStory = (story) => {
-    if (!("speechSynthesis" in window)) {
-      setMessage("Speech playback is not supported in this browser.");
+    if (
+      !("speechSynthesis" in window)
+    ) {
+      setMessage(
+        "Speech playback is not supported in this browser."
+      );
       return;
     }
 
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(
-      story.content
-    );
+    const utterance =
+      new SpeechSynthesisUtterance(
+        story.content
+      );
 
     utterance.rate = 0.85;
     utterance.pitch = 1.05;
+
+    if (
+      language.toLowerCase() ===
+      "malayalam"
+    ) {
+      utterance.lang = "ml-IN";
+    } else {
+      utterance.lang = "en-US";
+    }
 
     utterance.onstart = () => {
       setPlayingStory(story.id);
@@ -405,19 +603,28 @@ Return ONLY valid JSON in this format:
 
     utterance.onend = () => {
       setPlayingStory(null);
+
+      /*
+       * Practice section appears only after
+       * the story has finished being heard.
+       */
+      setShowPractice(true);
     };
 
     utterance.onerror = () => {
       setPlayingStory(null);
     };
 
-    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(
+      utterance
+    );
 
     /*
-     * Story XP is awarded only once per story.
+     * Story XP is awarded only once.
      */
     if (!heardStories[story.id]) {
       listenToStory();
+
       setHeardStories((previous) => ({
         ...previous,
         [story.id]: true,
@@ -425,50 +632,85 @@ Return ONLY valid JSON in this format:
     }
 
     setSelectedStory(story);
+
+    /*
+     * Also reveal practice after clicking Hear.
+     * This makes the UI responsive even if the
+     * browser finishes speech very quickly.
+     */
+    setShowPractice(true);
+
     setMessage(
-      "Great listening! Now practise the difficult words from the story."
+      "🎧 Listen carefully! Your practice words will appear below."
     );
   };
 
+  /*
+   * Stop story playback.
+   */
   const stopStory = () => {
-    window.speechSynthesis.cancel();
+    if (
+      "speechSynthesis" in window
+    ) {
+      window.speechSynthesis.cancel();
+    }
+
     setPlayingStory(null);
   };
 
   /*
-   * Hear an individual AI-generated practice word.
-   * +10 XP the first time the child hears that word.
+   * Hear one practice word.
    */
   const hearWord = (word) => {
-    if (!("speechSynthesis" in window)) {
-      setMessage("Speech playback is not supported in this browser.");
+    if (
+      !("speechSynthesis" in window)
+    ) {
+      setMessage(
+        "Speech playback is not supported in this browser."
+      );
       return;
     }
 
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(word);
+    const utterance =
+      new SpeechSynthesisUtterance(word);
 
     utterance.rate = 0.75;
     utterance.pitch = 1.1;
 
-    window.speechSynthesis.speak(utterance);
+    utterance.lang =
+      language.toLowerCase() ===
+      "malayalam"
+        ? "ml-IN"
+        : "en-US";
+
+    window.speechSynthesis.speak(
+      utterance
+    );
 
     setSelectedWord(word);
 
+    /*
+     * +10 XP for hearing the practice word,
+     * only once per word.
+     */
     if (!heardWords[word]) {
       hearPracticeWord();
+
       setHeardWords((previous) => ({
         ...previous,
         [word]: true,
       }));
     }
 
-    setMessage(`Listen carefully, then say "${word}".`);
+    setMessage(
+      `🎧 Listen, then say "${word}".`
+    );
   };
 
   /*
-   * Speech recognition.
+   * Say a practice word into the microphone.
    */
   const sayWord = (word) => {
     const SpeechRecognition =
@@ -484,12 +726,17 @@ Return ONLY valid JSON in this format:
 
     setSelectedWord(word);
     setIsListening(true);
-    setMessage(`Listening... say "${word}".`);
 
-    const recognition = new SpeechRecognition();
+    setMessage(
+      `🎤 Listening... say "${word}".`
+    );
+
+    const recognition =
+      new SpeechRecognition();
 
     recognition.lang =
-      data?.primaryLanguage === "Malayalam"
+      language.toLowerCase() ===
+      "malayalam"
         ? "ml-IN"
         : "en-US";
 
@@ -497,15 +744,31 @@ Return ONLY valid JSON in this format:
     recognition.maxAlternatives = 3;
 
     recognition.onresult = (event) => {
-      const spoken = event.results[0][0].transcript;
-      const spokenClean = normalize(spoken);
-      const targetClean = normalize(word);
+      const spoken =
+        event.results[0][0].transcript;
 
+      const spokenClean =
+        normalize(spoken);
+
+      const targetClean =
+        normalize(word);
+
+      /*
+       * Exact word match or the word appears
+       * inside the spoken result.
+       */
       const correct =
         spokenClean === targetClean ||
-        spokenClean.includes(targetClean);
+        spokenClean.includes(
+          targetClean
+        );
 
       if (correct) {
+        /*
+         * +15 XP for a correct spoken word.
+         *
+         * Only awarded once per word.
+         */
         if (!correctWords[word]) {
           practiceSpeechWord();
 
@@ -520,17 +783,23 @@ Return ONLY valid JSON in this format:
         );
       } else {
         setMessage(
-          `I heard "${spoken}". Nice try! Say "${word}" again.`
+          `I heard "${spoken}". Nice try! Let's try "${word}" again.`
         );
       }
     };
 
     recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error);
+      console.error(
+        "Speech recognition error:",
+        event.error
+      );
 
-      if (event.error === "not-allowed") {
+      if (
+        event.error ===
+        "not-allowed"
+      ) {
         setMessage(
-          "Please allow microphone access so you can practise speaking."
+          "🎤 Please allow microphone access to practise speaking."
         );
       } else {
         setMessage(
@@ -545,19 +814,43 @@ Return ONLY valid JSON in this format:
       setIsListening(false);
     };
 
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (error) {
+      console.error(error);
+      setIsListening(false);
+    }
   };
+
+  const totalSpeechXP =
+    Object.keys(heardWords).length *
+      10 +
+    Object.keys(correctWords).length *
+      15;
 
   return (
     <div className="ai-stories-page">
-      {/* HOME / LOGO HEADER */}
-      <header className="stories-topbar">
-        <Link to="/" className="melodic-logo" aria-label="Go to homepage">
-          <span className="melodic-logo-icon">🎵</span>
 
-          <span>
-            <strong>Melodic Voice</strong>
-            <small>The Gift of Connection</small>
+      {/* ================= HEADER ================= */}
+
+      <header className="stories-topbar">
+        <Link
+          to="/"
+          className="melodic-logo"
+          aria-label="Go to Melodic Voice homepage"
+        >
+          <span className="melodic-logo-icon">
+            🎵
+          </span>
+
+          <span className="melodic-logo-text">
+            <strong>
+              Melodic Voice
+            </strong>
+
+            <small>
+              The Gift of Connection
+            </small>
           </span>
         </Link>
 
@@ -566,264 +859,423 @@ Return ONLY valid JSON in this format:
         </div>
       </header>
 
-      <main className="stories-container">
-        <section className="stories-intro">
-          <div className="book-icon">📖</div>
+      {/* ================= MAIN ================= */}
 
-          <h1>AI Stories</h1>
+      <main className="stories-container">
+
+        {/* INTRO */}
+
+        <section className="stories-intro">
+
+          <div className="book-icon">
+            📖
+          </div>
+
+          <h1>
+            AI Stories
+          </h1>
 
           <p>
             New stories made especially for{" "}
-            <strong>{childName}</strong>.
+            <strong>
+              {childName}
+            </strong>
+            .
           </p>
 
           <div className="practice-target">
-            🎯 Practising {getTargetLabel(difficulty)}
+            🎯 Practising{" "}
+            {getTargetLabel(
+              difficulty
+            )}
           </div>
 
           <button
+            type="button"
             className="new-stories-button"
-            onClick={() => {
-              generateStories();
-              generatePracticeWords();
-            }}
-            disabled={isGenerating}
+            onClick={
+              generateNewStories
+            }
+            disabled={
+              isGenerating
+            }
           >
-            ✨ {isGenerating ? "Creating..." : "Create New AI Stories"}
+            ✨{" "}
+            {isGenerating
+              ? "Creating your stories..."
+              : "Create New AI Stories"}
           </button>
+
         </section>
 
+        {/* CHILD INFO */}
+
         <section className="child-info-card">
+
           <div>
             <span>👧</span>
             <small>Child</small>
-            <strong>{childName}</strong>
-          </div>
-
-          <div>
-            <span>🎂</span>
-            <small>Age</small>
-            <strong>{age}</strong>
+            <strong>
+              {childName}
+            </strong>
           </div>
 
           <div>
             <span>🎯</span>
-            <small>Speech target</small>
-            <strong>{getTargetLabel(difficulty)}</strong>
+            <small>
+              Speech target
+            </small>
+            <strong>
+              {getTargetLabel(
+                difficulty
+              )}
+            </strong>
           </div>
 
           <div>
             <span>🌈</span>
             <small>Theme</small>
-            <strong>{theme}</strong>
+            <strong>
+              {theme}
+            </strong>
           </div>
+
         </section>
 
+        {/* MESSAGE */}
+
         {message && (
-          <div className="stories-message">
+          <div
+            className="stories-message"
+            role="status"
+            aria-live="polite"
+          >
             {message}
           </div>
         )}
 
+        {/* INSTRUCTION */}
+
         <div className="listen-instruction">
-          🎧 <strong>Listen first</strong>
+          🎧{" "}
+          <strong>
+            Listen first
+          </strong>
+
           <span>
-            Hear a story, then practise the difficult words below.
+            Hear a story, then practise the
+            difficult words from it.
           </span>
         </div>
 
-        {/* STORIES */}
+        {/* ================= STORIES ================= */}
+
         <section className="stories-grid">
-          {stories.map((story, index) => {
-            const isPlaying = playingStory === story.id;
-            const hasHeard = heardStories[story.id];
 
-            return (
-              <article
-                key={story.id}
-                className={`story-card ${
-                  selectedStory?.id === story.id
-                    ? "selected"
-                    : ""
-                }`}
-              >
-                <div className="story-number">
-                  Story {index + 1}
-                </div>
+          {stories.map(
+            (story, index) => {
 
-                <div className="story-icon">
-                  {story.icon}
-                </div>
+              const isPlaying =
+                playingStory ===
+                story.id;
 
-                <h2>{story.title}</h2>
+              const hasHeard =
+                heardStories[
+                  story.id
+                ];
 
-                <div className="story-theme">
-                  {story.theme}
-                </div>
+              return (
+                <article
+                  key={story.id}
+                  className={`story-card ${
+                    selectedStory?.id ===
+                    story.id
+                      ? "selected"
+                      : ""
+                  }`}
+                >
 
-                <p className="story-description">
-                  {story.description}
-                </p>
-
-                <div className="story-target">
-                  🎯 {getTargetLabel(difficulty)}
-                </div>
-
-                <div className="story-actions">
-                  <button
-                    className="hear-story-button"
-                    onClick={() =>
-                      isPlaying
-                        ? stopStory()
-                        : hearStory(story)
-                    }
-                  >
-                    {isPlaying
-                      ? "■ Stop"
-                      : hasHeard
-                      ? "🔊 Hear Again"
-                      : "▶ Hear Story"}
-                  </button>
-                </div>
-
-                {hasHeard && (
-                  <div className="story-xp">
-                    ✓ Story heard · +20 XP
+                  <div className="story-number">
+                    Story {index + 1}
                   </div>
-                )}
 
-                <details className="parent-story">
-                  <summary>
-                    👨‍👩‍👧 Parent view: Read story
-                  </summary>
+                  <div className="story-icon">
+                    {story.icon}
+                  </div>
 
-                  <p>{story.content}</p>
-                </details>
-              </article>
-            );
-          })}
-        </section>
+                  <h2>
+                    {story.title}
+                  </h2>
 
-        {/* PRACTICE WORDS */}
-        <section className="practice-card">
-          <div className="practice-heading">
-            <div className="practice-microphone">
-              🎤
-            </div>
+                  <div className="story-theme">
+                    {story.theme}
+                  </div>
 
-            <div>
-              <h2>Let's Practise!</h2>
-              <p>
-                Listen to each word, then say it aloud.
-              </p>
-            </div>
-          </div>
+                  <p className="story-description">
+                    {story.description}
+                  </p>
 
-          <div className="practice-target-box">
-            <span>Today's speech target</span>
-            <strong>{getTargetLabel(difficulty)}</strong>
-          </div>
-
-          {targetWords.length === 0 ? (
-            <div className="practice-loading">
-              <div className="loading-dot">✨</div>
-              <strong>AI is creating your practice words...</strong>
-              <p>
-                The words will be chosen specifically for
-                your speech target and age.
-              </p>
-            </div>
-          ) : (
-            <div className="practice-word-grid">
-              {targetWords.map((word, index) => {
-                const heard = heardWords[word];
-                const correct = correctWords[word];
-
-                return (
-                  <div
-                    key={word}
-                    className={`practice-word-card ${
-                      selectedWord === word
-                        ? "active"
-                        : ""
-                    } ${
-                      correct ? "correct" : ""
-                    }`}
-                  >
-                    <div className="word-number">
-                      {index + 1}
-                    </div>
-
-                    <div className="practice-word">
-                      {word}
-                    </div>
-
-                    <button
-                      className="hear-word-button"
-                      onClick={() => hearWord(word)}
-                    >
-                      🔊 Hear
-                    </button>
-
-                    <button
-                      className="say-word-button"
-                      onClick={() => sayWord(word)}
-                      disabled={isListening}
-                    >
-                      🎤 Say It
-                    </button>
-
-                    <div className="word-xp">
-                      <span>+10 XP hearing</span>
-                      <span>+15 XP correct</span>
-                    </div>
-
-                    {heard && (
-                      <div className="heard-status">
-                        ✓ Heard · +10 XP
-                      </div>
-                    )}
-
-                    {correct && (
-                      <div className="correct-status">
-                        🌟 Correct · +15 XP
-                      </div>
+                  <div className="story-target">
+                    🎯{" "}
+                    {getTargetLabel(
+                      difficulty
                     )}
                   </div>
-                );
-              })}
-            </div>
+
+                  <div className="story-actions">
+
+                    <button
+                      type="button"
+                      className="hear-story-button"
+                      onClick={() =>
+                        hearStory(
+                          story
+                        )
+                      }
+                    >
+                      {isPlaying
+                        ? "🔊 Playing..."
+                        : "▶ Hear Story"}
+                    </button>
+
+                    {isPlaying && (
+                      <button
+                        type="button"
+                        className="stop-story-button"
+                        onClick={
+                          stopStory
+                        }
+                      >
+                        ■ Stop
+                      </button>
+                    )}
+
+                  </div>
+
+                  {hasHeard && (
+                    <div className="story-xp">
+                      ✓ Story heard · +20 XP
+                    </div>
+                  )}
+
+                  <details className="parent-story">
+                    <summary>
+                      👨‍👩‍👧 Parent view: Read story
+                    </summary>
+
+                    <p>
+                      {story.content}
+                    </p>
+                  </details>
+
+                </article>
+              );
+            }
           )}
 
-          <div className="practice-total">
-            <div>
-              <span>⭐ Total Speech XP</span>
-              <strong>{xp} XP</strong>
+        </section>
+
+        {/* ================= PRACTICE ================= */}
+
+        {showPractice && (
+          <section className="practice-section">
+
+            <div className="practice-header">
+              <div className="practice-icon">
+                🎤
+              </div>
+
+              <div>
+                <h2>
+                  Let's Practise!
+                </h2>
+
+                <p>
+                  These words came from the
+                  story you just heard.
+                </p>
+              </div>
             </div>
 
-            <p>
-              Keep practising! Every word you hear and say
-              helps build confidence.
+            <div className="practice-target-box">
+              <span>
+                Today's speech target
+              </span>
+
+              <strong>
+                {getTargetLabel(
+                  difficulty
+                )}
+              </strong>
+            </div>
+
+            <div className="practice-word-grid">
+
+              {practiceWords.map(
+                (word, index) => {
+
+                  const heard =
+                    heardWords[word];
+
+                  const correct =
+                    correctWords[word];
+
+                  return (
+                    <div
+                      key={word}
+                      className={`practice-word-card ${
+                        selectedWord ===
+                        word
+                          ? "active"
+                          : ""
+                      } ${
+                        correct
+                          ? "correct"
+                          : ""
+                      }`}
+                    >
+
+                      <div className="word-number">
+                        {index + 1}
+                      </div>
+
+                      <div className="practice-word">
+                        {word}
+                      </div>
+
+                      <button
+                        type="button"
+                        className="hear-word-button"
+                        onClick={() =>
+                          hearWord(
+                            word
+                          )
+                        }
+                      >
+                        🔊 Hear
+                      </button>
+
+                      <button
+                        type="button"
+                        className="say-word-button"
+                        onClick={() =>
+                          sayWord(
+                            word
+                          )
+                        }
+                        disabled={
+                          isListening &&
+                          selectedWord ===
+                            word
+                        }
+                      >
+                        🎤{" "}
+                        {isListening &&
+                        selectedWord ===
+                          word
+                          ? "Listening..."
+                          : "Say It"}
+                      </button>
+
+                      <div className="word-xp">
+                        +10 XP listening
+                        <br />
+                        +15 XP if correct
+                      </div>
+
+                      {heard && (
+                        <div className="heard-badge">
+                          ✓ Heard
+                        </div>
+                      )}
+
+                      {correct && (
+                        <div className="correct-badge">
+                          🌟 Correct!
+                        </div>
+                      )}
+
+                    </div>
+                  );
+                }
+              )}
+
+            </div>
+
+            {/* XP SUMMARY */}
+
+            <div className="speech-xp-summary">
+
+              <div>
+                <span>
+                  🎧 Words heard
+                </span>
+
+                <strong>
+                  +
+                  {Object.keys(
+                    heardWords
+                  ).length * 10}{" "}
+                  XP
+                </strong>
+              </div>
+
+              <div>
+                <span>
+                  🎤 Correct words
+                </span>
+
+                <strong>
+                  +
+                  {Object.keys(
+                    correctWords
+                  ).length * 15}{" "}
+                  XP
+                </strong>
+              </div>
+
+              <div className="total-xp">
+                <span>
+                  ✨ Speech XP
+                </span>
+
+                <strong>
+                  +{totalSpeechXP} XP
+                </strong>
+              </div>
+
+            </div>
+
+            <p className="parent-note">
+              👨‍👩‍👧 Speech recognition provides
+              an approximate practice result.
+              It is an encouraging learning activity,
+              not a clinical speech assessment.
             </p>
-          </div>
-        </section>
 
-        <section className="parent-note">
-          <strong>👨‍👩‍👧 Parent note</strong>
+          </section>
+        )}
 
-          <p>
-            Practice words are generated by AI according to
-            the child's age and speech target. They are
-            selected from the story/practice context rather
-            than being a fixed word bank.
-          </p>
+        {/* PRACTICE HIDDEN MESSAGE */}
 
-          <small>
-            Speech recognition provides an approximate
-            practice result. This is a learning activity,
-            not a clinical speech assessment.
-          </small>
-        </section>
+        {!showPractice && (
+          <section className="practice-coming">
+            <div>
+              🎧
+            </div>
+
+            <h2>
+              Practice Words Come Next
+            </h2>
+
+            <p>
+              Listen to a story first.
+              Then the AI-generated words
+              from that story will appear here.
+            </p>
+          </section>
+        )}
+
       </main>
     </div>
   );

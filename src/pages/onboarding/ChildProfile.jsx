@@ -1,59 +1,7 @@
-import { useRef, useState } from "react";
 import { useOnboarding } from "../../context/OnboardingContext";
 
 export default function ChildProfile() {
   const { data, updateData } = useOnboarding();
-  const fileInputRef = useRef(null);
-
-  const [imageError, setImageError] = useState("");
-
-  const handleAvatarUpload = (event) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    setImageError("");
-
-    // Only allow image files.
-    if (!file.type.startsWith("image/")) {
-      setImageError("Please choose an image file.");
-      return;
-    }
-
-    // Keep the MVP lightweight.
-    if (file.size > 5 * 1024 * 1024) {
-      setImageError("Please choose an image smaller than 5 MB.");
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      updateData({
-        avatar: reader.result,
-      });
-    };
-
-    reader.onerror = () => {
-      setImageError("We couldn't upload that image. Please try again.");
-    };
-
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveAvatar = () => {
-    updateData({
-      avatar: "",
-    });
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const openFilePicker = () => {
-    fileInputRef.current?.click();
-  };
 
   return (
     <>
@@ -62,64 +10,6 @@ export default function ChildProfile() {
       <p className="subtitle">
         Let's personalize your child's learning journey.
       </p>
-
-      {/* Avatar Upload */}
-      <div className="form-group">
-        <label>Child's Avatar</label>
-
-        <div className="avatar-upload">
-          <div className="avatar-preview">
-            {data.avatar ? (
-              <img
-                src={data.avatar}
-                alt="Uploaded child avatar preview"
-              />
-            ) : (
-              <div className="avatar-placeholder" aria-hidden="true">
-                👧
-              </div>
-            )}
-          </div>
-
-          <div className="avatar-upload-actions">
-            <button
-              type="button"
-              className="avatar-upload-button"
-              onClick={openFilePicker}
-            >
-              {data.avatar ? "Change Avatar" : "Upload Avatar"}
-            </button>
-
-            {data.avatar && (
-              <button
-                type="button"
-                className="avatar-remove-button"
-                onClick={handleRemoveAvatar}
-              >
-                Remove
-              </button>
-            )}
-          </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarUpload}
-            hidden
-          />
-
-          <p className="avatar-help">
-            Parents can upload a photo or a cartoon image.
-          </p>
-
-          {imageError && (
-            <p className="avatar-error" role="alert">
-              {imageError}
-            </p>
-          )}
-        </div>
-      </div>
 
       {/* First Name */}
       <div className="form-group">

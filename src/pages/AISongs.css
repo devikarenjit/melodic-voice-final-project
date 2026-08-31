@@ -1,83 +1,114 @@
-/* =========================================================
-   AI SONGS
-   ========================================================= */
-
 .ai-songs {
   width: 100%;
-
   max-width: 900px;
-
   margin: 0 auto;
-
-  padding: 32px 24px 60px;
-
+  padding: 24px 24px 60px;
   box-sizing: border-box;
 }
 
 
-/* =========================================================
+/* ==========================================================
    HEADER
-   ========================================================= */
+   ========================================================== */
 
 .songs-header {
+  margin-bottom: 24px;
   text-align: center;
-
-  margin-bottom: 28px;
 }
 
+.songs-header-top {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 52px;
+}
+
+.home-button {
+  position: absolute;
+  left: 0;
+  top: 8px;
+
+  display: inline-flex;
+  align-items: center;
+
+  padding: 10px 15px;
+
+  border-radius: 12px;
+
+  background: white;
+
+  color: #5134d4;
+
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: 900;
+
+  box-shadow:
+    0 6px 18px rgba(70, 55, 145, 0.1);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.home-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 24px rgba(70, 55, 145, 0.15);
+}
 
 .songs-music-icon {
   font-size: 42px;
-
-  margin-bottom: 8px;
 }
-
 
 .songs-header h1 {
-  margin: 0;
+  margin: 5px 0 0;
 
   font-size: 34px;
+  font-weight: 950;
 
-  font-weight: 900;
-
-  color: #1a1a1a;
+  color: #18152b;
 }
-
 
 .songs-header p {
   max-width: 650px;
 
-  margin: 10px auto 0;
+  margin: 9px auto 0;
 
-  font-size: 17px;
+  color: #666b7c;
+
+  font-size: 15px;
 
   line-height: 1.5;
-
-  color: #666;
 }
 
 
-/* =========================================================
+/* ==========================================================
    MAIN CARD
-   ========================================================= */
+   ========================================================== */
 
 .personalized-song-card {
-  padding: 36px;
+  padding: 34px;
 
   border-radius: 28px;
 
-  background: #ffffff;
+  background: white;
 
   text-align: center;
 
   box-shadow:
-    0 10px 35px rgba(0,0,0,0.08);
+    0 12px 35px rgba(55, 53, 91, 0.09);
 }
 
 
-/* =========================================================
+/* ==========================================================
    BADGE
-   ========================================================= */
+   ========================================================== */
 
 .song-badge {
   display: inline-block;
@@ -90,55 +121,109 @@
 
   color: #5635d8;
 
-  font-size: 13px;
-
-  font-weight: 800;
-
-  letter-spacing: 0.4px;
-}
-
-
-/* =========================================================
-   TITLE
-   ========================================================= */
-
-.personalized-song-card h2 {
-  margin: 22px 0 8px;
-
-  font-size: 42px;
-
-  line-height: 1.1;
+  font-size: 12px;
 
   font-weight: 900;
 
-  color: #4f35d4;
+  letter-spacing: 0.5px;
 }
 
+
+/* ==========================================================
+   TITLE
+   ========================================================== */
+
+.personalized-song-card h2 {
+  margin: 20px 0 8px;
+
+  color: #5035d5;
+
+  font-size: 39px;
+
+  line-height: 1.12;
+
+  font-weight: 950;
+}
 
 .song-description {
   margin: 0;
 
+  color: #666b7c;
+
+  font-size: 15px;
+}
+
+
+/* ==========================================================
+   TARGETS
+   ========================================================== */
+
+.target-section {
+  margin: 25px auto 10px;
+}
+
+.target-section h3 {
+  margin: 0 0 11px;
+
   font-size: 17px;
 
-  color: #666;
+  color: #29263d;
+}
+
+.target-list {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 9px;
+}
+
+.target-chip {
+  padding: 9px 16px;
+
+  border-radius: 999px;
+
+  background: #eee8ff;
+
+  color: #5235d4;
+
+  font-size: 14px;
+
+  font-weight: 950;
 }
 
 
-/* =========================================================
+/* ==========================================================
    PRACTICE WORDS
-   ========================================================= */
+   ========================================================== */
 
 .practice-words-section {
-  margin: 26px auto 8px;
-}
+  margin: 25px auto 12px;
 
+  padding: 20px;
+
+  border-radius: 19px;
+
+  background: #faf9ff;
+}
 
 .practice-words-section h3 {
-  margin: 0 0 12px;
+  margin: 0;
 
-  font-size: 18px;
+  font-size: 19px;
+
+  color: #29263d;
 }
 
+.practice-help {
+  margin: 6px 0 15px;
+
+  color: #777b8c;
+
+  font-size: 12px;
+}
 
 .practice-word-list {
   display: flex;
@@ -150,425 +235,391 @@
   gap: 9px;
 }
 
-
 .practice-word {
   padding: 9px 13px;
 
   border-radius: 999px;
 
-  background: #f6f3ff;
+  background: #f0eaff;
 
   color: #4f35d4;
 
-  font-size: 14px;
+  font-size: 13px;
 
-  font-weight: 800;
+  font-weight: 900;
 }
 
 
-/* =========================================================
-   AUDIO VISUAL
-   ========================================================= */
+/* ==========================================================
+   AUDIO VISUALIZER
+   ========================================================== */
 
 .audio-visual {
   display: flex;
 
   align-items: flex-end;
-
   justify-content: center;
 
-  gap: 8px;
+  gap: 7px;
 
-  height: 70px;
+  height: 72px;
 
-  margin: 28px auto 10px;
+  margin: 27px auto 10px;
 }
 
-
 .audio-bar {
-  width: 10px;
+  width: 9px;
 
-  height: 22px;
+  height: 20px;
 
   border-radius: 10px;
 
   background: #6045e8;
 }
 
-
-.audio-visual.playing
-.audio-bar {
+.audio-visual.playing .audio-bar {
   animation:
     soundWave
-    0.7s
+    0.65s
     ease-in-out
     infinite
     alternate;
 }
 
-
 .audio-bar:nth-child(1) {
   animation-delay: 0s;
 }
 
-
 .audio-bar:nth-child(2) {
-  animation-delay: 0.12s;
+  animation-delay: 0.1s;
 }
-
 
 .audio-bar:nth-child(3) {
-  animation-delay: 0.24s;
+  animation-delay: 0.2s;
 }
-
 
 .audio-bar:nth-child(4) {
-  animation-delay: 0.36s;
+  animation-delay: 0.3s;
 }
-
 
 .audio-bar:nth-child(5) {
-  animation-delay: 0.48s;
+  animation-delay: 0.4s;
 }
 
+.audio-bar:nth-child(6) {
+  animation-delay: 0.5s;
+}
+
+.audio-bar:nth-child(7) {
+  animation-delay: 0.6s;
+}
 
 @keyframes soundWave {
-
   from {
-    height: 14px;
+    height: 15px;
   }
 
   to {
-    height: 66px;
+    height: 68px;
   }
-
 }
 
 
-.song-status {
-  margin-bottom: 18px;
+/* ==========================================================
+   LISTEN
+   ========================================================== */
 
-  color: #666;
+.listen-first-message {
+  margin: 12px 0 !important;
 
-  font-size: 15px;
+  color: #777b8c !important;
+
+  font-size: 13px;
 }
 
 
-/* =========================================================
-   HEAR BUTTON
-   ========================================================= */
+/* ==========================================================
+   BUTTONS
+   ========================================================== */
 
 .listen-button {
   width: 100%;
 
   max-width: 460px;
 
-  min-height: 76px;
+  min-height: 72px;
 
   border: none;
 
-  border-radius: 22px;
+  border-radius: 21px;
 
-  background: #5635d8;
+  background:
+    linear-gradient(
+      135deg,
+      #5c38df,
+      #4930c7
+    );
 
   color: white;
 
-  font-size: 22px;
+  font-size: 21px;
 
-  font-weight: 800;
+  font-weight: 900;
 
   cursor: pointer;
 
   box-shadow:
-    0 8px 18px
-    rgba(86,53,216,0.25);
+    0 9px 20px rgba(
+      86,
+      53,
+      216,
+      0.25
+    );
 
   transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+    transform 0.2s ease;
 }
-
 
 .listen-button:hover {
   transform: translateY(-2px);
-
-  box-shadow:
-    0 12px 24px
-    rgba(86,53,216,0.30);
 }
-
 
 .listen-button.playing {
   background: #3f2aa8;
 }
 
+.new-song-button {
+  margin: 14px 0 0;
 
-/* =========================================================
-   XP
-   ========================================================= */
+  padding: 10px 18px;
 
-.xp-note {
-  margin: 16px 0 26px;
+  border: 0;
 
-  color: #666;
+  border-radius: 12px;
 
-  font-size: 15px;
+  background: #f0ebff;
+
+  color: #5035d5;
+
+  font-size: 12px;
+
+  font-weight: 900;
+
+  cursor: pointer;
 }
 
 
-/* =========================================================
+/* ==========================================================
+   XP
+   ========================================================== */
+
+.xp-note {
+  margin: 14px 0 25px;
+
+  color: #6d7182;
+
+  font-size: 13px;
+}
+
+
+/* ==========================================================
    SING
-   ========================================================= */
+   ========================================================== */
 
 .sing-section {
-  margin-top: 30px;
+  margin-top: 28px;
 
   padding-top: 28px;
 
-  border-top: 1px solid #eee;
+  border-top: 1px solid #ececf2;
 }
-
 
 .sing-section h3 {
-  margin: 0 0 8px;
+  margin: 0 0 7px;
 
   font-size: 23px;
+
+  color: #252238;
+}
+
+.sing-section > p {
+  color: #696d7e;
+
+  font-size: 13px;
 }
 
 
-.sing-section p {
-  margin: 0 0 18px;
-
-  color: #666;
-}
-
-
-/* =========================================================
+/* ==========================================================
    SING BUTTON
-   ========================================================= */
+   ========================================================== */
 
 .sing-button {
   width: 100%;
 
   max-width: 460px;
 
-  min-height: 70px;
+  min-height: 68px;
 
   border: none;
 
   border-radius: 20px;
 
-  background: #ff7b45;
+  background: #ff7746;
 
   color: white;
 
-  font-size: 21px;
+  font-size: 20px;
 
-  font-weight: 800;
+  font-weight: 900;
 
   cursor: pointer;
-
-  transition:
-    transform 0.15s ease,
-    opacity 0.15s ease;
 }
-
 
 .sing-button:hover:not(:disabled) {
   transform: translateY(-2px);
 }
 
-
-.sing-button:disabled {
-  cursor: not-allowed;
-
-  opacity: 0.45;
+.sing-button.recording {
+  background: #e85335;
 }
 
-
 .sing-button.completed {
-  background: #39a852;
+  background: #38a653;
 
   opacity: 1;
 }
 
+.sing-button:disabled {
+  cursor: default;
+}
 
-/* =========================================================
+
+/* ==========================================================
+   MESSAGES
+   ========================================================== */
+
+.recording-message {
+  margin-top: 15px !important;
+
+  color: #df583b !important;
+
+  font-weight: 800;
+}
+
+.success-message {
+  margin-top: 15px !important;
+
+  color: #319447 !important;
+
+  font-weight: 800;
+}
+
+.recording-error {
+  margin-top: 15px !important;
+
+  color: #c54232 !important;
+
+  font-weight: 700;
+}
+
+
+/* ==========================================================
    PARENT LYRICS
-   ========================================================= */
+   ========================================================== */
 
 .parent-lyrics {
-  margin-top: 34px;
+  margin-top: 30px;
 
-  padding: 22px;
+  padding: 20px;
 
   border-radius: 18px;
 
-  background: #f8f8fc;
+  background: #f7f7fb;
 
   text-align: left;
 }
 
-
 .parent-lyrics summary {
   cursor: pointer;
 
-  font-weight: 700;
+  color: #555968;
 
-  color: #555;
+  font-weight: 800;
+
+  font-size: 13px;
 }
 
-
 .lyrics-box {
-  margin-top: 18px;
+  margin-top: 16px;
 
   padding: 18px;
 
-  border-radius: 16px;
+  border-radius: 15px;
 
   background: white;
 }
 
-
 .lyrics-box h3 {
   margin-top: 0;
-}
 
+  color: #29263d;
+}
 
 .lyrics-box p {
   margin: 9px 0;
 
-  color: #555;
-}
+  color: #555968;
 
+  font-size: 13px;
 
-/* =========================================================
-   MESSAGES
-   ========================================================= */
-
-.listen-first-message {
-  margin-top: 14px !important;
-
-  color: #777 !important;
-
-  font-size: 14px;
-}
-
-
-.success-message {
-  margin-top: 16px !important;
-
-  color: #319447 !important;
-
-  font-weight: 700;
-}
-
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 600px) {
-
-  .ai-songs {
-    padding: 24px 16px 40px;
-  }
-
-
-  .personalized-song-card {
-    padding: 25px 18px;
-
-    border-radius: 22px;
-  }
-
-
-  .songs-header h1 {
-    font-size: 28px;
-  }
-
-
-  .personalized-song-card h2 {
-    font-size: 34px;
-  }
-
-
-  .listen-button {
-    font-size: 19px;
-  }
-
-
-  .sing-button {
-    font-size: 18px;
-  }
-
-}
-
-/* =========================================================
-   SING WITH ME - MICROPHONE RECORDING
-   ========================================================= */
-
-.sing-button.recording {
-  background: #d94b4b;
-  animation: recordingPulse 1.2s ease-in-out infinite;
-}
-
-.recording-message {
-  margin-top: 14px !important;
-  color: #d94b4b !important;
-  font-weight: 800;
   line-height: 1.6;
 }
 
-.recording-error {
-  margin-top: 14px !important;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: #fff0f0;
-  color: #c03939 !important;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.5;
-}
 
-.practice-words {
-  margin-top: 22px;
-}
+/* ==========================================================
+   MOBILE
+   ========================================================== */
 
-.practice-words-title {
-  margin-bottom: 12px;
-  font-weight: 700;
-  color: #555;
-}
-
-.practice-word-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-}
-
-.practice-word {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 9px 13px;
-  border-radius: 999px;
-  background: #f1eaff;
-  color: #5635d8;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-@keyframes recordingPulse {
-  0% {
-    transform: scale(1);
+@media (max-width: 600px) {
+  .ai-songs {
+    padding: 20px 14px 40px;
   }
 
-  50% {
-    transform: scale(1.03);
+  .personalized-song-card {
+    padding: 24px 17px;
+
+    border-radius: 23px;
   }
 
-  100% {
-    transform: scale(1);
+  .songs-header h1 {
+    font-size: 29px;
+  }
+
+  .personalized-song-card h2 {
+    font-size: 31px;
+  }
+
+  .home-button {
+    left: 0;
+
+    padding: 8px 11px;
+
+    font-size: 11px;
+  }
+
+  .songs-music-icon {
+    font-size: 36px;
+  }
+
+  .practice-words-section {
+    padding: 16px;
+  }
+
+  .listen-button {
+    font-size: 18px;
+  }
+
+  .sing-button {
+    font-size: 18px;
   }
 }

@@ -35,6 +35,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-right: auto;
   color: #4e38d8;
   text-decoration: none;
   font-size: 20px;

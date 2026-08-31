@@ -242,6 +242,38 @@ export default function SpeechAssessment() {
       JSON.stringify(speechProfile)
     );
 
+    try {
+      const savedProfile = JSON.parse(
+        localStorage.getItem("melodic-voice-profile") || "{}"
+      );
+
+      const nextProfile = {
+        ...savedProfile,
+        speechSound: selectedSound,
+        practiceSound: selectedSound,
+        difficultSounds: [selectedSound],
+        difficultWords: words.join(", "),
+        learningStarted: true,
+      };
+
+      localStorage.setItem(
+        "melodic-voice-profile",
+        JSON.stringify(nextProfile)
+      );
+
+      localStorage.setItem(
+        "melodicVoiceOnboarding",
+        JSON.stringify(nextProfile)
+      );
+
+      localStorage.setItem(
+        "practiceSound",
+        selectedSound
+      );
+    } catch {
+      // ignore storage failures and continue
+    }
+
     navigate("/dashboard");
   };
 
@@ -252,20 +284,9 @@ export default function SpeechAssessment() {
           <span className="speech-logo-icon">🎵</span>
           <span>Melodic Voice</span>
         </Link>
-
-        <Link to="/dashboard" className="home-button">
-          <Home size={17} />
-          <span>Home</span>
-        </Link>
       </header>
 
       <main className="speech-main">
-        <div className="speech-breadcrumb">
-          <Link to="/dashboard">
-            <ArrowLeft size={16} />
-            Back to dashboard
-          </Link>
-        </div>
 
         <section className="speech-hero">
           <div className="hero-sparkle sparkle-one">✦</div>

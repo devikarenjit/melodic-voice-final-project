@@ -4,47 +4,44 @@ import {
   useRef,
   useState,
 } from "react";
-
-import { useOnboarding } from "../context/OnboardingContext";
-import { useProgress } from "../context/ProgressContext";
-
+import {
+  Link,
+} from "react-router-dom";
+import {
+  useOnboarding,
+} from "../context/OnboardingContext";
+import {
+  useProgress,
+} from "../context/ProgressContext";
 import "./AISongs.css";
 
 /*
-  ============================================================
-  MELODIC VOICE - AI SONGS
-  ============================================================
+============================================================
+MELODIC VOICE - AI SONGS
+============================================================
 
-  Purpose:
-  - Reads the child's difficult sound/letter from onboarding.
-  - Selects practice words related to that challenge.
-  - Creates personalized lyrics.
-  - Creates a simple melody in the browser.
-  - Speaks the lyrics aloud so a young child does not need
-    to read.
-  - Allows the child to sing using the microphone.
-  - Records the singing during the practice session.
-  - Awards XP after singing is completed.
+This version supports MULTIPLE speech targets.
 
-  Example:
+Example:
 
-  Child challenge: S
+"x and m"
 
-  Practice words:
-  snake
-  snail
-  sun
-  song
-  star
-  school
+The app will practise both:
 
-  The song then repeatedly practices those words.
+X:
+fox, box, six, mix
+
+M:
+moon, monkey, mouse, music
+
+The lyrics use words from BOTH groups.
+============================================================
 */
 
 
-/* ============================================================
-   PRACTICE WORD BANKS
-   ============================================================ */
+/* ==========================================================
+   WORD BANKS
+   ========================================================== */
 
 const SOUND_WORD_BANK = {
   s: [
@@ -56,10 +53,6 @@ const SOUND_WORD_BANK = {
     "school",
     "sock",
     "bus",
-    "house",
-    "pass",
-    "music",
-    "dinosaur",
   ],
 
   z: [
@@ -74,10 +67,10 @@ const SOUND_WORD_BANK = {
   m: [
     "moon",
     "monkey",
-    "music",
-    "mommy",
     "mouse",
+    "music",
     "milk",
+    "mommy",
     "smile",
     "home",
   ],
@@ -204,9 +197,9 @@ const SOUND_WORD_BANK = {
 };
 
 
-/* ============================================================
+/* ==========================================================
    LETTER WORD BANK
-   ============================================================ */
+   ========================================================== */
 
 const LETTER_WORD_BANK = {
   a: [
@@ -411,58 +404,51 @@ const LETTER_WORD_BANK = {
 };
 
 
-/* ============================================================
-   MUSIC STYLES
-   ============================================================ */
+/* ==========================================================
+   GENRES
+   ========================================================== */
 
 const GENRE_STYLES = {
   "Nursery Rhymes": {
     bpm: 92,
     wave: "sine",
-    mood: "gentle",
   },
 
   Lullaby: {
     bpm: 68,
     wave: "sine",
-    mood: "calm",
   },
 
   "Action Songs": {
     bpm: 118,
     wave: "triangle",
-    mood: "energetic",
   },
 
   "Learning Songs": {
     bpm: 100,
     wave: "sine",
-    mood: "bright",
   },
 
   "Dance Songs": {
     bpm: 112,
     wave: "triangle",
-    mood: "playful",
   },
 
   "Animal Songs": {
     bpm: 105,
     wave: "square",
-    mood: "playful",
   },
 
   "Space Songs": {
     bpm: 88,
     wave: "sine",
-    mood: "magical",
   },
 };
 
 
-/* ============================================================
+/* ==========================================================
    HELPERS
-   ============================================================ */
+   ========================================================== */
 
 function normalize(value) {
   return String(value || "")
@@ -471,97 +457,113 @@ function normalize(value) {
 }
 
 
-function getFirstValue(value) {
+/*
+Convert:
+
+"x and m"
+"x & m"
+"x, m"
+"x; m"
+
+into:
+
+["x", "m"]
+*/
+
+function getTargets(value) {
   if (!value) {
-    return "";
+    return [];
   }
 
-  if (Array.isArray(value)) {
-    return value[0] || "";
-  }
+  const text = String(value)
+    .toLowerCase()
+    .replace(/\band\b/g, ",")
+    .replace(/&/g, ",")
+    .replace(/\//g, ",")
+    .replace(/;/g, ",")
+    .replace(/\+/g, ",");
 
-  return String(value)
-    .split(/[,;\n]+/)
-    .map((item) => item.trim())
-    .filter(Boolean)[0] || "";
+  return [
+    ...new Set(
+      text
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    ),
+  ];
 }
 
 
-/* ============================================================
-   FIND CHILD'S MAIN SPEECH CHALLENGE
-   ============================================================ */
+/* ==========================================================
+   GET CHILD'S SPEECH TARGETS
+   ========================================================== */
 
-function getPracticeChallenge(data) {
-  const difficultSounds = Array.isArray(
-    data?.difficultSounds
-  )
-    ? data.difficultSounds
-    : [];
+function getPracticeTargets(data) {
+  const candidateValues = [
+    data?.difficultSounds,
+    data?.difficultWords,
+    data?.speechSound,
+    data?.practiceSound,
+  ];
 
-  const firstSound =
-    difficultSounds.find(Boolean);
+  for (const value of candidateValues) {
+    if (Array.isArray(value)) {
+      const targets = value
+        .flatMap((item) => getTargets(item))
+        .filter(Boolean);
 
-  if (firstSound) {
-    return normalize(firstSound);
+      if (targets.length > 0) {
+        return [...new Set(targets)];
+      }
+    }
+
+    const targets = getTargets(value);
+
+    if (targets.length > 0) {
+      return [...new Set(targets)];
+    }
   }
 
-  const difficultWord =
-    getFirstValue(data?.difficultWords);
-
-  if (difficultWord) {
-    return normalize(difficultWord);
-  }
-
-  return "s";
+  return ["x", "m"];
 }
 
 
-/* ============================================================
-   FIND PRACTICE WORDS
-   ============================================================ */
+/* ==========================================================
+   GET WORDS FOR ONE TARGET
+   ========================================================== */
 
-function getPracticeWords(challenge) {
-  const normalizedChallenge =
-    normalize(challenge);
+function getWordsForTarget(target) {
+  const clean =
+    normalize(target);
 
   /*
-    Exact sound match.
+   Sound bank.
   */
 
-  if (
-    SOUND_WORD_BANK[
-      normalizedChallenge
-    ]
-  ) {
-    return SOUND_WORD_BANK[
-      normalizedChallenge
-    ];
+  if (SOUND_WORD_BANK[clean]) {
+    return SOUND_WORD_BANK[clean];
   }
 
 
   /*
-    Exact letter match.
+   Letter bank.
   */
 
   if (
-    normalizedChallenge.length === 1 &&
-    LETTER_WORD_BANK[
-      normalizedChallenge
-    ]
+    clean.length === 1 &&
+    LETTER_WORD_BANK[clean]
   ) {
-    return LETTER_WORD_BANK[
-      normalizedChallenge
-    ];
+    return LETTER_WORD_BANK[clean];
   }
 
 
   /*
-    If a word was entered,
-    use its first letter.
+   If a whole word was supplied,
+   use its first letter.
   */
 
   const firstLetter =
-    normalizedChallenge.charAt(0);
+    clean.charAt(0);
 
   if (
     LETTER_WORD_BANK[firstLetter]
@@ -572,177 +574,242 @@ function getPracticeWords(challenge) {
   }
 
 
-  /*
-    Safe fallback.
-  */
-
-  return SOUND_WORD_BANK.s;
+  return [];
 }
 
 
-/* ============================================================
-   SELECT SIX UNIQUE WORDS
-   ============================================================ */
+/* ==========================================================
+   GET WORDS FOR ALL TARGETS
+   ========================================================== */
 
-function selectWords(words) {
-  return [
-    ...new Set(words),
-  ].slice(0, 6);
+function getPracticeWords(targets) {
+  const words = [];
+
+  targets.forEach((target) => {
+    const targetWords =
+      getWordsForTarget(target);
+
+    /*
+     Take several words from each
+     target so ALL targets are represented.
+    */
+
+    targetWords
+      .slice(0, 4)
+      .forEach((word) => {
+        if (!words.includes(word)) {
+          words.push(word);
+        }
+      });
+  });
+
+
+  return words.slice(0, 8);
 }
 
 
-/* ============================================================
-   CREATE PERSONALIZED LYRICS
-   ============================================================ */
+/* ==========================================================
+   CREATE LYRICS USING ALL TARGETS
+   ========================================================== */
 
 function createLyrics({
-  challenge,
+  targets,
   words,
   genre,
   childName,
-  seed = 0,
+  seed,
 }) {
   const name =
     childName || "friend";
 
-  const word1 =
-    words[0] || challenge;
+  /*
+   Separate words by target.
+  */
 
-  const word2 =
-    words[1] || word1;
-
-  const word3 =
-    words[2] || word1;
-
-  const word4 =
-    words[3] || word2;
-
-  const sparkleLine =
-    seed % 2 === 0
-      ? `${name} bounces and sings, hooray!`
-      : `${name} sways and sings, hello day!`;
+  const targetGroups =
+    targets.map((target) => ({
+      target,
+      words:
+        getWordsForTarget(target)
+          .filter((word) =>
+            words.includes(word)
+          )
+          .slice(0, 4),
+    }));
 
 
-  /* Lullaby */
+  /*
+   If we have two targets,
+   explicitly bring both into
+   the song.
+  */
 
-  if (genre === "Lullaby") {
+  if (targetGroups.length >= 2) {
+    const first =
+      targetGroups[0];
+
+    const second =
+      targetGroups[1];
+
+    const a =
+      first.words[0] ||
+      first.target;
+
+    const b =
+      first.words[1] ||
+      first.target;
+
+    const c =
+      second.words[0] ||
+      second.target;
+
+    const d =
+      second.words[1] ||
+      second.target;
+
+    const e =
+      first.words[2] ||
+      a;
+
+    const f =
+      second.words[2] ||
+      c;
+
+
+    if (genre === "Lullaby") {
+      return [
+        `${a} and ${c}, softly glow`,
+        `${name}, close your eyes and dream slow`,
+        `${b} and ${d}, floating in the night`,
+        `${e} and ${f}, shining bright`,
+        `${name} sings a gentle song`,
+        `Sleepy stars will sing along`,
+      ];
+    }
+
+
+    if (genre === "Action Songs") {
+      return [
+        `${a} and ${c}, jump up high`,
+        `${b} and ${d}, touch the sky`,
+        `Clap for ${e}, stomp for ${f}`,
+        `${name} sings and dances too`,
+        `Turn around and shout hooray`,
+        `We can practise words today`,
+      ];
+    }
+
+
+    if (genre === "Space Songs") {
+      return [
+        `${a} and ${c} are flying far`,
+        `${b} and ${d} are space stars`,
+        `${e} is zooming through the night`,
+        `${f} is glowing with delight`,
+        `${name} travels past the moon`,
+        `Singing our practice tune`,
+      ];
+    }
+
+
+    /*
+     Default / nursery / learning.
+    */
+
     return [
-      `Goodnight ${word1}, soft and slow, low and slow`,
-      `${name}, close your eyes and dream in a glow`,
-      `${word2} and ${word3}, twinkle, twinkle bright`,
-      `${sparkleLine}`,
+      `${a} and ${c}, come sing with me`,
+      `${b} and ${d}, happy as can be`,
+      `${e} and ${f}, clap along`,
+      `${name} is singing a happy song`,
+      `Move and smile, come dance today`,
+      `Say our special words and play`,
     ];
   }
 
 
-  /* Animal Songs */
+  /*
+   Single-target version.
+  */
 
-  if (genre === "Animal Songs") {
-    return [
-      `${word1}, ${word1}, hop and play`,
-      `${word2}, ${word2}, sing all day`,
-      `${word3} and ${word4}, clap, clap, hooray!`,
-      `${sparkleLine}`,
-    ];
-  }
+  const group =
+    targetGroups[0] || {
+      target: targets[0] || "s",
+      words,
+    };
 
+  const [
+    a = group.target,
+    b = a,
+    c = b,
+    d = c,
+    e = d,
+    f = e,
+  ] = group.words;
 
-  /* Action Songs */
-
-  if (genre === "Action Songs") {
-    return [
-      `${word1}, ${word1}, jump up high`,
-      `${word2}, ${word2}, touch the sky`,
-      `Clap for ${word3}, stomp for ${word4}, stomp, stomp, wow!`,
-      `${sparkleLine}`,
-    ];
-  }
-
-
-  /* Dance Songs */
-
-  if (genre === "Dance Songs") {
-    return [
-      `${word1}, ${word2}, dance with me`,
-      `${word3}, ${word4}, one, two, three`,
-      `Turn around and wiggle, wiggle, sway`,
-      `${sparkleLine}`,
-    ];
-  }
-
-
-  /* Space Songs */
-
-  if (genre === "Space Songs") {
-    return [
-      `${word1} is zooming like a star`,
-      `${word2} is soaring very far`,
-      `${word3} is shining in the night`,
-      `${sparkleLine}`,
-    ];
-  }
-
-
-  /* Nursery Rhymes */
-
-  if (genre === "Nursery Rhymes") {
-    return [
-      `${word1}, ${word1}, sing with me`,
-      `${word2} sounds happy as can be`,
-      `${word3}, ${word4}, here we go`,
-      `${sparkleLine}`,
-    ];
-  }
-
-
-  /* Default - Learning Songs */
 
   return [
-    `${word1}, ${word1}, sing and sway`,
-    `${word2}, ${word2}, hooray, hooray!`,
-    `${word3}, ${word4}, say them strong`,
-    `${sparkleLine}`,
+    `${a}, ${a}, sing with me`,
+    `${b}, ${b}, happy as can be`,
+    `${c} and ${d}, clap along`,
+    `${e} and ${f}, sing our song`,
+    `${name} is smiling bright today`,
+    `Practising words while we play`,
   ];
 }
 
 
-/* ============================================================
+/* ==========================================================
    MELODY
-   ============================================================ */
+   ========================================================== */
 
-function createNoteSequence(genre, seed = 0) {
+function createNoteSequence(
+  genre,
+  seed = 0
+) {
   const baseMelodies = {
     "Nursery Rhymes": [
       261.63,
-      293.66,
       329.63,
+      392.0,
+      523.25,
       392.0,
       329.63,
       293.66,
+      392.0,
+      329.63,
       261.63,
-      261.63,
+      293.66,
+      329.63,
     ],
 
     Lullaby: [
       261.63,
       329.63,
       392.0,
+      440.0,
+      392.0,
+      349.23,
       329.63,
       293.66,
-      261.63,
-      293.66,
-      261.63,
+      329.63,
+      349.23,
+      392.0,
+      440.0,
     ],
 
     "Action Songs": [
       261.63,
-      329.63,
       392.0,
+      523.25,
+      659.25,
       523.25,
       392.0,
       329.63,
       392.0,
       523.25,
+      659.25,
+      523.25,
+      392.0,
     ],
 
     "Learning Songs": [
@@ -750,64 +817,226 @@ function createNoteSequence(genre, seed = 0) {
       293.66,
       329.63,
       392.0,
+      440.0,
+      392.0,
       329.63,
       293.66,
-      261.63,
-      329.63,
-    ],
-
-    "Dance Songs": [
       261.63,
       329.63,
       392.0,
       440.0,
+    ],
+
+    "Dance Songs": [
+      293.66,
+      392.0,
+      493.88,
+      587.33,
+      493.88,
       392.0,
       329.63,
       392.0,
+      493.88,
+      587.33,
       523.25,
+      392.0,
     ],
 
     "Animal Songs": [
       261.63,
-      329.63,
+      349.23,
       392.0,
+      493.88,
+      392.0,
+      349.23,
       329.63,
-      261.63,
       293.66,
       329.63,
+      392.0,
+      493.88,
       392.0,
     ],
 
     "Space Songs": [
       220.0,
       261.63,
-      293.66,
       329.63,
+      392.0,
+      493.88,
       392.0,
       329.63,
       293.66,
-      261.63,
+      329.63,
+      392.0,
+      440.0,
+      392.0,
     ],
   };
 
-  const melody = baseMelodies[genre] || baseMelodies["Learning Songs"];
-  const rotation = seed % melody.length;
+  const melody =
+    baseMelodies[genre] ||
+    baseMelodies["Learning Songs"];
 
-  return melody
-    .slice(rotation)
-    .concat(melody.slice(0, rotation))
-    .map((note, index) =>
-      index % 2 === 0 ? note * (1 + (seed % 3) * 0.02) : note
-    );
+  const rotation =
+    Math.abs(seed) % melody.length;
+
+  const shifted =
+    melody
+      .slice(rotation)
+      .concat(melody.slice(0, rotation));
+
+  return shifted.map((note, index) => {
+    const offset =
+      (seed % 5) * (index % 2 === 0 ? 1.0 : 0.5);
+    return note * (1 + offset / 100);
+  });
+}
+
+function createSongArrangement(genre, seed = 0) {
+  const melody = createNoteSequence(genre, seed);
+  const harmonyRoot = melody[0] || 261.63;
+
+  const bass = melody.map((note, index) => {
+    if (index % 2 === 0) return note / 2;
+    return note / 3;
+  });
+
+  const xylophone = melody.map((note, index) => {
+    const octaveLift = index % 2 === 0 ? 1.5 : 2.0;
+    return note * octaveLift;
+  });
+
+  const violin = melody.map((note, index) => {
+    const variation = (index % 3) * 7;
+    return (note + variation) * 0.8;
+  });
+
+  const chords = melody.map((note, index) => {
+    const root = note;
+    return [
+      root,
+      root * 1.25,
+      root * 1.5,
+    ];
+  });
+
+  return {
+    melody,
+    bass,
+    xylophone,
+    violin,
+    chords,
+    padRoot: harmonyRoot,
+  };
+}
+
+/* ==========================================================
+   PLAY NOTE
+   ========================================================== */
+
+function playNote(
+  context,
+  frequency,
+  startTime,
+  duration,
+  wave,
+  volume = 0.12,
+  options = {}
+) {
+  const {
+    attack = 0.04,
+    release = 0.12,
+    vibrato = 0,
+    detune = 0,
+    secondWave = "sine",
+    secondRatio = 1.5,
+    secondVolume = 0.4,
+  } = options;
+
+  const primaryOscillator =
+    context.createOscillator();
+  const harmonyOscillator =
+    context.createOscillator();
+  const gain =
+    context.createGain();
+
+  primaryOscillator.type = wave;
+  harmonyOscillator.type = secondWave;
+
+  primaryOscillator.detune.value = detune;
+  harmonyOscillator.detune.value = detune * 0.5;
+
+  primaryOscillator.frequency.setValueAtTime(
+    frequency,
+    startTime
+  );
+  harmonyOscillator.frequency.setValueAtTime(
+    frequency * secondRatio,
+    startTime
+  );
+
+  const maxGain = volume;
+
+  gain.gain.setValueAtTime(
+    0.0001,
+    startTime
+  );
+  gain.gain.exponentialRampToValueAtTime(
+    maxGain,
+    startTime + attack
+  );
+  gain.gain.exponentialRampToValueAtTime(
+    0.0001,
+    startTime + duration + release
+  );
+
+  if (vibrato > 0) {
+    const vibratoOsc = context.createOscillator();
+    const vibratoGain = context.createGain();
+
+    vibratoOsc.type = "sine";
+    vibratoOsc.frequency.value = vibrato;
+    vibratoGain.gain.value = 6;
+
+    vibratoOsc.connect(vibratoGain);
+    vibratoGain.connect(primaryOscillator.frequency);
+    vibratoGain.connect(harmonyOscillator.frequency);
+
+    vibratoOsc.start(startTime);
+    vibratoOsc.stop(startTime + duration);
+  }
+
+  primaryOscillator.connect(gain);
+  harmonyOscillator.connect(gain);
+
+  gain.connect(
+    context.destination
+  );
+
+  primaryOscillator.start(startTime);
+  harmonyOscillator.start(startTime);
+
+  primaryOscillator.stop(
+    startTime + duration
+  );
+  harmonyOscillator.stop(
+    startTime + duration
+  );
+
+  if (secondVolume < 1) {
+    const secondaryGain = context.createGain();
+    secondaryGain.gain.value = secondVolume;
+    harmonyOscillator.connect(secondaryGain);
+    secondaryGain.connect(context.destination);
+  }
 }
 
 
-/* ============================================================
+/* ==========================================================
    MAIN COMPONENT
-   ============================================================ */
+   ========================================================== */
 
 export default function AISongs() {
-
   const { data } =
     useOnboarding();
 
@@ -817,49 +1046,24 @@ export default function AISongs() {
   } = useProgress();
 
 
-  /* ----------------------------------------------------------
-     Playback state
-     ---------------------------------------------------------- */
+  const [isPlaying, setIsPlaying] =
+    useState(false);
 
-  const [
-    isPlaying,
-    setIsPlaying,
-  ] = useState(false);
+  const [hasListened, setHasListened] =
+    useState(false);
 
-  const [
-    hasListened,
-    setHasListened,
-  ] = useState(false);
+  const [hasSung, setHasSung] =
+    useState(false);
 
+  const [songSeed, setSongSeed] =
+    useState(0);
 
-  /* ----------------------------------------------------------
-     Singing state
-     ---------------------------------------------------------- */
+  const [isRecording, setIsRecording] =
+    useState(false);
 
-  const [
-    hasSung,
-    setHasSung,
-  ] = useState(false);
+  const [recordingError, setRecordingError] =
+    useState("");
 
-  const [
-    songSeed,
-    setSongSeed,
-  ] = useState(0);
-
-  const [
-    isRecording,
-    setIsRecording,
-  ] = useState(false);
-
-  const [
-    recordingError,
-    setRecordingError,
-  ] = useState("");
-
-
-  /* ----------------------------------------------------------
-     Audio references
-     ---------------------------------------------------------- */
 
   const audioContextRef =
     useRef(null);
@@ -874,49 +1078,45 @@ export default function AISongs() {
     useRef([]);
 
 
-  /* ----------------------------------------------------------
-     Child information
-     ---------------------------------------------------------- */
+  /*
+   * Child information.
+   */
 
   const childName =
-    data?.firstName || "friend";
+    data?.firstName ||
+    data?.childName ||
+    "friend";
 
   const genre =
     data?.songGenre ||
     "Learning Songs";
 
 
-  /* ----------------------------------------------------------
-     Speech challenge
-     ---------------------------------------------------------- */
+  /*
+   * MULTIPLE TARGETS.
+   */
 
-  const challenge =
+  const targets =
     useMemo(
       () =>
-        getPracticeChallenge(data),
+        getPracticeTargets(data),
       [data]
     );
 
 
-  /* ----------------------------------------------------------
-     Practice words
-     ---------------------------------------------------------- */
+  /*
+   * PRACTICE WORDS FOR ALL TARGETS.
+   */
 
   const practiceWords =
     useMemo(
       () =>
-        selectWords(
-          getPracticeWords(
-            challenge
-          )
+        getPracticeWords(
+          targets
         ),
-      [challenge]
+      [targets]
     );
 
-
-  /* ----------------------------------------------------------
-     Music style
-     ---------------------------------------------------------- */
 
   const style =
     GENRE_STYLES[genre] ||
@@ -925,22 +1125,22 @@ export default function AISongs() {
     ];
 
 
-  /* ----------------------------------------------------------
-     Lyrics
-     ---------------------------------------------------------- */
+  /*
+   * Lyrics now use all target groups.
+   */
 
   const lyrics =
     useMemo(
       () =>
         createLyrics({
-          challenge,
+          targets,
           words: practiceWords,
           genre,
           childName,
           seed: songSeed,
         }),
       [
-        challenge,
+        targets,
         practiceWords,
         genre,
         childName,
@@ -949,35 +1149,31 @@ export default function AISongs() {
     );
 
 
-  /* ==========================================================
+  /*
+   * Display target.
+   */
+
+  const targetLabel =
+    targets.join(" and ");
+
+
+  /* ========================================================
      STOP SONG
-     ========================================================== */
+     ======================================================== */
 
   function stopSong() {
-
     timersRef.current.forEach(
-      (timer) => {
-        clearTimeout(timer);
-      }
+      (timer) =>
+        clearTimeout(timer)
     );
 
     timersRef.current = [];
-
-
-    /*
-      Stop text-to-speech.
-    */
 
     if (
       "speechSynthesis" in window
     ) {
       window.speechSynthesis.cancel();
     }
-
-
-    /*
-      Close Web Audio context.
-    */
 
     if (
       audioContextRef.current
@@ -990,128 +1186,79 @@ export default function AISongs() {
         null;
     }
 
-
     setIsPlaying(false);
   }
 
 
-  /* ==========================================================
-     PLAY ONE NOTE
-     ========================================================== */
-
-  function playNote(
-    context,
-    frequency,
-    startTime,
-    duration,
-    wave
-  ) {
-
-    const oscillator =
-      context.createOscillator();
-
-    const gain =
-      context.createGain();
-
-
-    oscillator.type = wave;
-
-    oscillator.frequency.setValueAtTime(
-      frequency,
-      startTime
-    );
-
-
-    /*
-      Gentle fade in.
-    */
-
-    gain.gain.setValueAtTime(
-      0.0001,
-      startTime
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.16,
-      startTime + 0.03
-    );
-
-
-    /*
-      Gentle fade out.
-    */
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.0001,
-      startTime + duration
-    );
-
-
-    oscillator.connect(gain);
-
-    gain.connect(
-      context.destination
-    );
-
-
-    oscillator.start(startTime);
-
-    oscillator.stop(
-      startTime + duration
-    );
-  }
-
-
-  /* ==========================================================
+  /* ========================================================
      SPEAK LYRICS
-     ========================================================== */
+     ======================================================== */
 
   function speakLyrics() {
-
     if (
       !("speechSynthesis" in window)
     ) {
       return;
     }
 
-
-    const fullLyrics =
-      lyrics.join(". ");
-
+    window.speechSynthesis.cancel();
 
     const utterance =
       new SpeechSynthesisUtterance(
-        fullLyrics
+        lyrics.join(". ")
       );
 
+    utterance.rate = 0.72;
+    utterance.pitch = 1.1;
+    utterance.volume = 1.4;
 
     /*
-      Child-friendly speaking speed.
-    */
+     * Tell the browser to use English.
+     */
 
-    utterance.rate = 0.82;
-
-    utterance.pitch = 1.12;
-
-    utterance.volume = 1;
+    utterance.lang =
+      data?.primaryLanguage ===
+      "Malayalam"
+        ? "ml-IN"
+        : "en-US";
 
 
     /*
-      Mark the song as completed
-      when the spoken lyrics finish.
-    */
+     * Try to select a natural
+     * sounding voice.
+     */
+
+    const voices =
+      window.speechSynthesis
+        .getVoices();
+
+    const preferredVoice =
+      voices.find(
+        (voice) =>
+          voice.lang
+            ?.toLowerCase()
+            .startsWith(
+              utterance.lang
+                .toLowerCase()
+                .split("-")[0]
+            )
+      );
+
+    if (preferredVoice) {
+      utterance.voice =
+        preferredVoice;
+    }
+
 
     utterance.onend = () => {
       setHasListened(true);
       setIsPlaying(false);
     };
 
-
     utterance.onerror = () => {
       setHasListened(true);
       setIsPlaying(false);
     };
-
 
     window.speechSynthesis.speak(
       utterance
@@ -1119,54 +1266,38 @@ export default function AISongs() {
   }
 
 
-  /* ==========================================================
+  /* ========================================================
      PLAY SONG
-     ========================================================== */
+     ======================================================== */
 
   async function playSong() {
-
-    /*
-      If already playing,
-      stop the current song.
-    */
-
     if (isPlaying) {
       stopSong();
       return;
     }
 
-
     setRecordingError("");
-
     setIsPlaying(true);
 
-
-    /*
-      Browser AudioContext.
-    */
 
     const AudioContext =
       window.AudioContext ||
       window.webkitAudioContext;
 
 
+    /*
+     * Browser does not support
+     * Web Audio.
+     */
+
     if (!AudioContext) {
-
-      /*
-        Fallback:
-        still speak the lyrics.
-      */
-
       speakLyrics();
-
       listenToSong();
-
       return;
     }
 
 
     try {
-
       const context =
         new AudioContext();
 
@@ -1182,85 +1313,149 @@ export default function AISongs() {
       }
 
 
-      const notes =
-        createNoteSequence(
+      const arrangement =
+        createSongArrangement(
           genre,
-          songSeed
+          songSeed + targets.length
         );
 
+      const notes = arrangement.melody;
+      const beat = 60 / style.bpm;
+      const noteDuration = beat * 0.78;
+      const start = context.currentTime + 0.05;
+      const musicVolume = 0.035;
 
-      const beatDuration =
-        60 / style.bpm;
-
-
-      const noteDuration =
-        beatDuration * 0.82;
-
-
-      const startTime =
-        context.currentTime +
-        0.05;
-
-
-      /*
-        Play melody.
-      */
-
-      notes.forEach(
-        (frequency, index) => {
-
+      arrangement.chords.forEach((chord, index) => {
+        chord.forEach((frequency, chordIndex) => {
           playNote(
             context,
             frequency,
-            startTime +
-              index *
-                beatDuration,
-            noteDuration,
-            style.wave
+            start + index * beat + chordIndex * 0.05,
+            beat * 1.1,
+            "triangle",
+            musicVolume * (chordIndex === 0 ? 1.4 : 0.8),
+            {
+              attack: 0.07,
+              release: 0.22,
+              secondWave: "sine",
+              secondRatio: 1.25,
+              secondVolume: 0.18,
+            }
           );
+        });
+      });
 
+      notes.forEach((frequency, index) => {
+        playNote(
+          context,
+          frequency,
+          start + index * beat,
+          noteDuration,
+          style.wave,
+          musicVolume * 1.6,
+          {
+            attack: 0.03,
+            release: 0.12,
+            detune: index % 2 === 0 ? -4 : 8,
+            secondWave: "triangle",
+            secondRatio: 1.5,
+            secondVolume: 0.2,
+          }
+        );
+      });
+
+      arrangement.xylophone.forEach((frequency, index) => {
+        if (index % 2 === 0) {
+          playNote(
+            context,
+            frequency,
+            start + index * beat + 0.04,
+            beat * 0.7,
+            "triangle",
+            musicVolume * 1.3,
+            {
+              attack: 0.01,
+              release: 0.09,
+              secondWave: "sine",
+              secondRatio: 2,
+              secondVolume: 0.12,
+            }
+          );
         }
-      );
+      });
 
+      arrangement.violin.forEach((frequency, index) => {
+        if (index % 3 !== 0) {
+          playNote(
+            context,
+            frequency,
+            start + index * beat + 0.14,
+            beat * 0.9,
+            "sine",
+            musicVolume * 1.2,
+            {
+              attack: 0.08,
+              release: 0.18,
+              vibrato: 4,
+              secondWave: "triangle",
+              secondRatio: 1.8,
+              secondVolume: 0.16,
+            }
+          );
+        }
+      });
+
+      arrangement.bass.forEach((frequency, index) => {
+        if (index % 2 === 0) {
+          playNote(
+            context,
+            frequency,
+            start + index * beat,
+            beat * 1.7,
+            "sine",
+            musicVolume * 1.5,
+            {
+              attack: 0.05,
+              release: 0.25,
+              secondWave: "triangle",
+              secondRatio: 1.2,
+              secondVolume: 0.1,
+            }
+          );
+        }
+      });
 
       /*
-        Start speaking the lyrics
-        at the same time.
-      */
+       * Start the lyrics before the full music so the voice
+       * sits on top as the lead layer.
+       */
 
       speakLyrics();
 
 
       /*
-        Award listening XP once.
-      */
+       * +10 XP once when
+       * listening starts.
+       */
 
       listenToSong();
 
 
       /*
-        Safety timer in case
-        speech synthesis does not
-        fire its onend event.
-      */
+       * Safety timer.
+       */
 
-      const melodyDuration =
-        notes.length *
-          beatDuration +
-        1;
-
+      const duration =
+        notes.length * beat +
+        2;
 
       const timer =
         setTimeout(() => {
-
-          setHasListened(true);
-
           setIsPlaying(false);
 
           if (
             audioContextRef.current
           ) {
-
             audioContextRef.current
               .close()
               .catch(() => {});
@@ -1268,53 +1463,60 @@ export default function AISongs() {
             audioContextRef.current =
               null;
           }
-
-        }, melodyDuration * 1000);
-
+        }, duration * 1000);
 
       timersRef.current.push(
         timer
       );
 
     } catch (error) {
-
       console.error(
         "Song playback error:",
         error
       );
 
-
       /*
-        If Web Audio fails,
-        use speech as fallback.
-      */
+       * Still speak the lyrics
+       * if audio generation fails.
+       */
 
       speakLyrics();
 
       listenToSong();
-
     }
   }
 
 
-  /* ==========================================================
-     START MICROPHONE RECORDING
-     ========================================================== */
+  /* ========================================================
+     NEW SONG
+     ======================================================== */
+
+  function generateNewSong() {
+    stopSong();
+
+    setSongSeed(
+      (previous) =>
+        previous + 1
+    );
+
+    setHasListened(false);
+    setHasSung(false);
+    setRecordingError("");
+  }
+
+
+  /* ========================================================
+     RECORDING
+     ======================================================== */
 
   async function startRecording() {
-
     setRecordingError("");
-
-
-    /*
-      Check browser support.
-    */
 
     if (
       !navigator.mediaDevices ||
-      !navigator.mediaDevices.getUserMedia
+      !navigator.mediaDevices
+        .getUserMedia
     ) {
-
       setRecordingError(
         "Your browser does not support microphone recording."
       );
@@ -1324,24 +1526,12 @@ export default function AISongs() {
 
 
     try {
-
-      /*
-        Ask the child/parent
-        for microphone permission.
-      */
-
       const stream =
-        await navigator.mediaDevices.getUserMedia(
-          {
+        await navigator.mediaDevices
+          .getUserMedia({
             audio: true,
-          }
-        );
+          });
 
-
-      /*
-        Choose a supported
-        recording format.
-      */
 
       let options = {};
 
@@ -1351,15 +1541,8 @@ export default function AISongs() {
         )
       ) {
         options = {
-          mimeType: "audio/webm",
-        };
-      } else if (
-        MediaRecorder.isTypeSupported(
-          "audio/mp4"
-        )
-      ) {
-        options = {
-          mimeType: "audio/mp4",
+          mimeType:
+            "audio/webm",
         };
       }
 
@@ -1370,46 +1553,27 @@ export default function AISongs() {
           options
         );
 
-
       mediaRecorderRef.current =
         recorder;
-
 
       audioChunksRef.current =
         [];
 
 
-      /*
-        Save incoming audio.
-      */
-
       recorder.ondataavailable =
         (event) => {
-
           if (
             event.data &&
             event.data.size > 0
           ) {
-
             audioChunksRef.current.push(
               event.data
             );
-
           }
-
         };
 
 
-      /*
-        When recording stops.
-      */
-
       recorder.onstop = () => {
-
-        /*
-          Stop microphone tracks.
-        */
-
         stream
           .getTracks()
           .forEach(
@@ -1418,24 +1582,13 @@ export default function AISongs() {
           );
 
 
-        /*
-          Create the recorded
-          audio file in memory.
-
-          This is ready for future
-          speech-analysis integration.
-        */
-
-        const mimeType =
-          recorder.mimeType ||
-          "audio/webm";
-
-
         const recordedBlob =
           new Blob(
             audioChunksRef.current,
             {
-              type: mimeType,
+              type:
+                recorder.mimeType ||
+                "audio/webm",
             }
           );
 
@@ -1446,33 +1599,22 @@ export default function AISongs() {
         );
 
 
-        /*
-          Singing practice completed.
-        */
-
         if (!hasSung) {
-
           singSong();
-
           setHasSung(true);
-
         }
 
-
         setIsRecording(false);
-
       };
 
 
       recorder.onerror = (
         event
       ) => {
-
         console.error(
           "Recording error:",
           event
         );
-
 
         stream
           .getTracks()
@@ -1481,159 +1623,87 @@ export default function AISongs() {
               track.stop()
           );
 
-
         setIsRecording(false);
 
         setRecordingError(
           "Something went wrong while recording. Please try again."
         );
-
       };
 
 
-      /*
-        Begin recording.
-      */
-
       recorder.start();
-
 
       setIsRecording(true);
 
     } catch (error) {
-
       console.error(
-        "Microphone permission error:",
+        "Microphone error:",
         error
       );
 
-
       setIsRecording(false);
-
 
       if (
         error?.name ===
         "NotAllowedError"
       ) {
-
         setRecordingError(
-          "Microphone access was blocked. Please click the microphone icon in your browser address bar and allow access."
+          "Microphone access was blocked. Please allow microphone access in Chrome."
         );
-
       } else if (
         error?.name ===
         "NotFoundError"
       ) {
-
         setRecordingError(
-          "No microphone was found. Please connect a microphone or headset."
+          "No microphone was found."
         );
-
       } else {
-
         setRecordingError(
           "We couldn't start the microphone. Please try again."
         );
-
       }
-
     }
   }
 
 
-  function generateNewSong() {
-    setSongSeed((previous) => previous + 1);
-    setHasSung(false);
-    setHasListened(false);
-    setIsPlaying(false);
-    setRecordingError("");
-    stopSong();
-  }
-
-  /* ==========================================================
-     STOP MICROPHONE RECORDING
-     ========================================================== */
-
   function stopRecording() {
-
     const recorder =
       mediaRecorderRef.current;
-
 
     if (
       recorder &&
       recorder.state !==
         "inactive"
     ) {
-
       recorder.stop();
-
     }
   }
 
 
-  /* ==========================================================
-     SING BUTTON
-     ========================================================== */
-
   async function handleSing() {
-
-    setRecordingError("");
-
-
-    /*
-      If already recording,
-      clicking the button stops it.
-    */
-
     if (isRecording) {
-
       stopRecording();
-
       return;
     }
-
-
-    /*
-      Do not allow another
-      singing session after completion.
-    */
 
     if (hasSung) {
       return;
     }
 
-
-    /*
-      Start microphone recording.
-    */
-
     await startRecording();
   }
 
 
-  /* ==========================================================
+  /* ========================================================
      CLEANUP
-     ========================================================== */
+     ======================================================== */
 
   useEffect(() => {
-
     return () => {
-
-      /*
-        Stop song.
-      */
-
       timersRef.current.forEach(
-        (timer) => {
-          clearTimeout(timer);
-        }
+        (timer) =>
+          clearTimeout(timer)
       );
-
-
-      /*
-        Stop speech synthesis.
-      */
 
       if (
         "speechSynthesis" in window
@@ -1641,88 +1711,77 @@ export default function AISongs() {
         window.speechSynthesis.cancel();
       }
 
-
-      /*
-        Close audio context.
-      */
-
       if (
         audioContextRef.current
       ) {
-
         audioContextRef.current
           .close()
           .catch(() => {});
-
       }
-
-
-      /*
-        Stop microphone if
-        user leaves the page.
-      */
 
       const recorder =
         mediaRecorderRef.current;
-
 
       if (
         recorder &&
         recorder.state !==
           "inactive"
       ) {
-
         recorder.stop();
-
       }
-
     };
-
   }, []);
 
 
-  /* ==========================================================
+  /* ========================================================
      RENDER
-     ========================================================== */
+     ======================================================== */
 
   return (
     <main className="ai-songs">
 
-      {/* -----------------------------------------------------
-          Header
-          ----------------------------------------------------- */}
+      {/* ==================================================
+          HEADER
+          ================================================== */}
 
       <header className="songs-header">
 
-        <div
-          className="songs-music-icon"
-          aria-hidden="true"
-        >
-          🎵
-        </div>
+        <div className="songs-header-top">
 
+          <Link
+            to="/"
+            className="home-button"
+          >
+            ← Home
+          </Link>
+
+          <div
+            className="songs-music-icon"
+            aria-hidden="true"
+          >
+            🎵
+          </div>
+
+        </div>
 
         <h1>
           Your AI Song
         </h1>
 
-
         <p>
           A personalized song made
-          around the sound or letter
-          you are practicing.
+          around all the sounds and
+          words you are practising.
         </p>
 
       </header>
 
 
-      {/* -----------------------------------------------------
-          Main personalized card
-          ----------------------------------------------------- */}
+      {/* ==================================================
+          SONG CARD
+          ================================================== */}
 
       <section className="personalized-song-card">
-
-        {/* Badge */}
 
         <div className="song-badge">
           ✨ MADE FOR{" "}
@@ -1730,45 +1789,70 @@ export default function AISongs() {
         </div>
 
 
-        {/* Practice challenge */}
-
         <h2>
           Practice the “
-          {challenge}
-          ” sound
+          {targetLabel}
+          ” sounds
         </h2>
 
 
         <p className="song-description">
           {genre} • Your practice
-          words are built into the
-          song.
+          words are built into the song.
         </p>
 
 
-        {/* -------------------------------------------------
-            Practice words
-            ------------------------------------------------- */}
+        {/* ================================================
+            TARGETS
+            ================================================ */}
 
-        <div className="practice-words">
+        <div className="target-section">
 
-          <div className="practice-words-title">
-            🎯 Practice Words
+          <h3>
+            🎯 Sounds to practise
+          </h3>
+
+          <div className="target-list">
+            {targets.map(
+              (target) => (
+                <span
+                  key={target}
+                  className="target-chip"
+                >
+                  {target}
+                </span>
+              )
+            )}
           </div>
 
+        </div>
+
+
+        {/* ================================================
+            PRACTICE WORDS
+            ================================================ */}
+
+        <div className="practice-words-section">
+
+          <h3>
+            🎯 Practice Words
+          </h3>
+
+          <p className="practice-help">
+            These words practise all
+            of your speech targets.
+          </p>
 
           <div className="practice-word-list">
 
             {practiceWords.map(
               (word) => (
-
                 <span
                   key={word}
                   className="practice-word"
                 >
                   {word}
                 </span>
-
               )
             )}
 
@@ -1777,9 +1861,9 @@ export default function AISongs() {
         </div>
 
 
-        {/* -------------------------------------------------
-            Audio visualizer
-            ------------------------------------------------- */}
+        {/* ================================================
+            AUDIO VISUAL
+            ================================================ */}
 
         <div
           className={`audio-visual ${
@@ -1789,37 +1873,30 @@ export default function AISongs() {
           }`}
           aria-hidden="true"
         >
-
           <div className="audio-bar" />
-
           <div className="audio-bar" />
-
           <div className="audio-bar" />
-
           <div className="audio-bar" />
-
           <div className="audio-bar" />
-
+          <div className="audio-bar" />
+          <div className="audio-bar" />
         </div>
 
-
-        {/* -------------------------------------------------
-            Instruction
-            ------------------------------------------------- */}
 
         <p className="listen-first-message">
 
           🔊{" "}
+
           {isPlaying
             ? "Listen to your personalized song..."
-            : "Press the big button to hear your song"}
+            : "Press the button to hear your song"}
 
         </p>
 
 
-        {/* -------------------------------------------------
-            Hear My Song
-            ------------------------------------------------- */}
+        {/* ================================================
+            HEAR SONG
+            ================================================ */}
 
         <button
           type="button"
@@ -1837,28 +1914,27 @@ export default function AISongs() {
 
         </button>
 
+
         <button
           type="button"
           className="new-song-button"
-          onClick={generateNewSong}
+          onClick={
+            generateNewSong
+          }
         >
           ✨ New AI Song
         </button>
 
 
-        {/* Listening XP */}
-
         <p className="xp-note">
-
           🎧 Listening to the song
           = <strong>+10 XP</strong>
-
         </p>
 
 
-        {/* -------------------------------------------------
-            Singing section
-            ------------------------------------------------- */}
+        {/* ================================================
+            SING
+            ================================================ */}
 
         <section className="sing-section">
 
@@ -1866,31 +1942,23 @@ export default function AISongs() {
             🎤 Ready to sing?
           </h3>
 
-
           <p>
-            Listen to the song first,
-            then try the practice words
-            yourself.
+            Listen first, then sing
+            along using the practice words.
           </p>
 
 
-          {/* Sing button */}
-
           <button
             type="button"
-            className={`
-              sing-button
-              ${
-                isRecording
-                  ? "recording"
-                  : ""
-              }
-              ${
-                hasSung
-                  ? "completed"
-                  : ""
-              }
-            `}
+            className={`sing-button ${
+              isRecording
+                ? "recording"
+                : ""
+            } ${
+              hasSung
+                ? "completed"
+                : ""
+            }`}
             onClick={handleSing}
             disabled={hasSung}
           >
@@ -1904,93 +1972,55 @@ export default function AISongs() {
           </button>
 
 
-          {/* ------------------------------------------------
-              Recording message
-              ------------------------------------------------ */}
-
           {isRecording && (
-
             <p className="recording-message">
-
               🎤 I'm listening!
-
               <br />
-
               Sing the practice words
               with me.
-
             </p>
-
           )}
 
-
-          {/* ------------------------------------------------
-              Before recording
-              ------------------------------------------------ */}
 
           {!isRecording &&
             !hasSung && (
-
               <p className="listen-first-message">
-
-                🎵 Press "Sing With Me"
-                and sing along with your
-                personalized song.
-
+                🎵 Sing along with your
+                personalized song and practise
+                the highlighted words.
               </p>
-
             )}
 
 
-          {/* ------------------------------------------------
-              Completed
-              ------------------------------------------------ */}
-
           {hasSung && (
-
             <p className="success-message">
-
-              🌟 Amazing,{" "}
-              {childName}!
-
+              🌟 Amazing, {childName}!
               <br />
-
-              You completed your
-              singing practice and
-              earned <strong>20 XP</strong>.
-
+              You completed your singing
+              practice and earned{" "}
+              <strong>20 XP</strong>.
             </p>
-
           )}
 
 
-          {/* ------------------------------------------------
-              Error
-              ------------------------------------------------ */}
-
           {recordingError && (
-
             <p className="recording-error">
-
               ⚠️ {recordingError}
-
             </p>
-
           )}
 
         </section>
 
 
-        {/* -------------------------------------------------
-            Parent lyrics
-            ------------------------------------------------- */}
+        {/* ================================================
+            PARENT LYRICS
+            ================================================ */}
 
         <details className="parent-lyrics">
 
           <summary>
-            👨‍👩‍👧 Parent: View Song Words
+            👨‍👩‍👧 Parent: View Song Lyrics
           </summary>
-
 
           <div className="lyrics-box">
 
@@ -1998,16 +2028,13 @@ export default function AISongs() {
               Song Lyrics
             </h3>
 
-
             {lyrics.map(
               (line, index) => (
-
                 <p
                   key={`${line}-${index}`}
                 >
                   {line}
                 </p>
-
               )
             )}
 

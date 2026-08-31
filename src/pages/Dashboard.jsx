@@ -7,17 +7,28 @@ import {
   Mic2,
   Music2,
   ArrowRight,
+  Check,
 } from "lucide-react";
 import "./Dashboard.css";
 
 export default function Dashboard() {
   const { data } = useOnboarding();
-  const { xp, level, streak, started, startJourney } = useProgress();
+
+  const {
+    xp,
+    level,
+    streak,
+    started,
+    startJourney,
+    dailyGoals,
+  } = useProgress();
+
   const navigate = useNavigate();
 
   const isGirl = data.gender === "girl";
 
-  const selectedProfileArt = data.profileArt || (isGirl ? "👧" : "🧒");
+  const selectedProfileArt =
+    data.profileArt || (isGirl ? "👧" : "🧒");
 
   const avatarImage = isGirl
     ? "/images/Girl.png"
@@ -27,6 +38,53 @@ export default function Dashboard() {
     ? "/images/palace.png"
     : "/images/together.png";
 
+  /* =========================
+     SAFE DAILY GOAL VALUES
+     ========================= */
+
+  const practiceGoal = dailyGoals?.practiceMinutes || {
+    current: 0,
+    target: 15,
+  };
+
+  const storyGoal = dailyGoals?.listenStory || {
+    current: 0,
+    target: 1,
+  };
+
+  const songGoal = dailyGoals?.singSong || {
+    current: 0,
+    target: 1,
+  };
+
+  const practiceCurrent = practiceGoal.current || 0;
+  const practiceTarget = practiceGoal.target || 15;
+
+  const storyCurrent = storyGoal.current || 0;
+  const storyTarget = storyGoal.target || 1;
+
+  const songCurrent = songGoal.current || 0;
+  const songTarget = songGoal.target || 1;
+
+  const practicePercent = Math.min(
+    (practiceCurrent / practiceTarget) * 100,
+    100
+  );
+
+  const storyPercent = Math.min(
+    (storyCurrent / storyTarget) * 100,
+    100
+  );
+
+  const songPercent = Math.min(
+    (songCurrent / songTarget) * 100,
+    100
+  );
+
+  /* =========================
+     CONTINUE
+     ========================= */
+
   const handleContinue = () => {
     if (!started) {
       startJourney();
@@ -34,6 +92,10 @@ export default function Dashboard() {
 
     navigate("/continue");
   };
+
+  /* =========================
+     QUICK ACTIVITIES
+     ========================= */
 
   const cards = [
     {
@@ -70,13 +132,27 @@ export default function Dashboard() {
       <header className="dash-header">
 
         <div className="dash-brand-row">
-          <Link to="/" className="dash-brand" aria-label="Go to homepage">
-            <span className="dash-brand-icon">🎵</span>
+
+          <Link
+            to="/"
+            className="dash-brand"
+            aria-label="Go to homepage"
+          >
+            <span className="dash-brand-icon">
+              🎵
+            </span>
+
             <div>
-              <strong>Melodic Voice</strong>
-              <small>The Gift of Connection</small>
+              <strong>
+                Melodic Voice
+              </strong>
+
+              <small>
+                The Gift of Connection
+              </small>
             </div>
           </Link>
+
         </div>
 
         <div className="dash-topbar">
@@ -84,7 +160,10 @@ export default function Dashboard() {
           <div className="dash-profile">
 
             {data.profileArt ? (
-              <div className="dash-avatar dash-avatar--emoji" aria-label="Selected profile art">
+              <div
+                className="dash-avatar dash-avatar--emoji"
+                aria-label="Selected profile art"
+              >
                 {selectedProfileArt}
               </div>
             ) : (
@@ -96,6 +175,7 @@ export default function Dashboard() {
             )}
 
             <div>
+
               <strong>
                 {data.firstName || "Child"}
               </strong>
@@ -103,6 +183,7 @@ export default function Dashboard() {
               <small>
                 ⭐ Level {level}
               </small>
+
             </div>
 
           </div>
@@ -117,7 +198,7 @@ export default function Dashboard() {
 
         </div>
 
-        {/* XP BAR */}
+        {/* ================= XP BAR ================= */}
 
         <div className="dash-xp-bar">
 
@@ -150,6 +231,7 @@ export default function Dashboard() {
         </div>
 
       </header>
+
 
       {/* ================= HERO ================= */}
 
@@ -191,7 +273,9 @@ export default function Dashboard() {
             onClick={handleContinue}
           >
 
-            <span>🎯</span>
+            <span>
+              🎯
+            </span>
 
             {started
               ? "Continue"
@@ -204,6 +288,7 @@ export default function Dashboard() {
         </div>
 
       </section>
+
 
       {/* ================= STREAK ================= */}
 
@@ -227,6 +312,7 @@ export default function Dashboard() {
         </div>
 
       </div>
+
 
       {/* ================= QUICK ACTIVITIES ================= */}
 
@@ -270,13 +356,16 @@ export default function Dashboard() {
 
       </section>
 
+
       {/* ================= TODAY'S GOALS ================= */}
 
       <section className="dash-goals">
 
         <div className="goals-title">
 
-          <span>🎯</span>
+          <span>
+            🎯
+          </span>
 
           <strong>
             Today's Goals
@@ -284,78 +373,144 @@ export default function Dashboard() {
 
         </div>
 
-        {/* Speaking */}
+
+        {/* ================= PRACTICE SPEAKING ================= */}
 
         <div className="goal-row">
 
-          <span>
-            Practice Speaking
-          </span>
+          <div className="goal-label">
 
-          <span className="goal-progress">
-            15 / 15 min
-          </span>
+            <span>
+              Practice Speaking
+            </span>
 
-          <div className="goal-bar">
+            <span className="goal-progress">
+              {practiceCurrent} / {practiceTarget} min
+            </span>
+
+          </div>
+
+          <div
+            className="goal-bar"
+            role="progressbar"
+            aria-valuenow={practiceCurrent}
+            aria-valuemin="0"
+            aria-valuemax={practiceTarget}
+            aria-label={`Practice speaking: ${practiceCurrent} of ${practiceTarget} minutes`}
+          >
 
             <div
               className="goal-fill"
               style={{
-                width: "100%",
+                width: `${practicePercent}%`,
               }}
             />
 
           </div>
 
+          {practicePercent >= 100 && (
+            <span
+              className="goal-complete"
+              aria-label="Practice speaking goal completed"
+            >
+              <Check size={16} />
+              Complete
+            </span>
+          )}
+
         </div>
 
-        {/* Story */}
+
+        {/* ================= LISTEN TO STORY ================= */}
 
         <div className="goal-row">
 
-          <span>
-            Listen to a Story
-          </span>
+          <div className="goal-label">
 
-          <span className="goal-progress">
-            1 / 1
-          </span>
+            <span>
+              Listen to a Story
+            </span>
 
-          <div className="goal-bar">
+            <span className="goal-progress">
+              {storyCurrent} / {storyTarget}
+            </span>
+
+          </div>
+
+          <div
+            className="goal-bar"
+            role="progressbar"
+            aria-valuenow={storyCurrent}
+            aria-valuemin="0"
+            aria-valuemax={storyTarget}
+            aria-label={`Listen to a story: ${storyCurrent} of ${storyTarget}`}
+          >
 
             <div
               className="goal-fill goal-fill--story"
               style={{
-                width: "100%",
+                width: `${storyPercent}%`,
               }}
             />
 
           </div>
 
+          {storyPercent >= 100 && (
+            <span
+              className="goal-complete"
+              aria-label="Listen to a story goal completed"
+            >
+              <Check size={16} />
+              Complete
+            </span>
+          )}
+
         </div>
 
-        {/* Song */}
+
+        {/* ================= SING A SONG ================= */}
 
         <div className="goal-row">
 
-          <span>
-            Sing a Song
-          </span>
+          <div className="goal-label">
 
-          <span className="goal-progress">
-            0 / 1
-          </span>
+            <span>
+              Sing a Song
+            </span>
 
-          <div className="goal-bar">
+            <span className="goal-progress">
+              {songCurrent} / {songTarget}
+            </span>
+
+          </div>
+
+          <div
+            className="goal-bar"
+            role="progressbar"
+            aria-valuenow={songCurrent}
+            aria-valuemin="0"
+            aria-valuemax={songTarget}
+            aria-label={`Sing a song: ${songCurrent} of ${songTarget}`}
+          >
 
             <div
               className="goal-fill goal-fill--song"
               style={{
-                width: "0%",
+                width: `${songPercent}%`,
               }}
             />
 
           </div>
+
+          {songPercent >= 100 && (
+            <span
+              className="goal-complete"
+              aria-label="Sing a song goal completed"
+            >
+              <Check size={16} />
+              Complete
+            </span>
+          )}
 
         </div>
 
