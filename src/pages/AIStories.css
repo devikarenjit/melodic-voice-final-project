@@ -246,7 +246,7 @@
 }
 
 .child-info-card small {
-  color: #8a8da0;
+  color: #4f5568;
 
   font-size: 10px;
 
@@ -552,7 +552,7 @@
 .practice-header p {
   margin: 5px 0 0;
 
-  color: #777b8d;
+  color: #4f5568;
 
   font-size: 13px;
 }
@@ -578,7 +578,7 @@
 }
 
 .practice-target-box span {
-  color: #77738e;
+  color: #4f5568;
 
   font-size: 11px;
 }
@@ -709,7 +709,7 @@
 .word-xp {
   margin-top: 9px;
 
-  color: #85889a;
+  color: #4f5568;
 
   text-align: center;
 
@@ -761,7 +761,7 @@
 .speech-xp-summary span {
   display: block;
 
-  color: #74788b;
+  color: #4f5568;
 
   font-size: 11px;
 }
